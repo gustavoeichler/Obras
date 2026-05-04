@@ -1,0 +1,103 @@
+import os
+import uuid
+
+from flask import Blueprint, current_app, jsonify, request, send_from_directory
+from flask_jwt_extended import get_jwt_identity
+from werkzeug.utils import secure_filename
+
+from app.extensions import db
+from app.middleware.auth import authorize_project_access
+from app.models.photo import Photo
+
+bp = Blueprint("photos", __name__)
+
+_ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
+_MAGIC = {
+    b"\xff\xd8":           "image/jpeg",
+    b"\x89PNG\r\n\x1a\n":  "image/png",
+    b"RIFF":               "image/webp",
+}
+
+
+def _detect_mime(data: bytes) -> str | None:
+    for magic, mime in _MAGIC.items():
+        if data[: len(magic)] == magic:
+            return mime
+    return None
+
+
+def _ext_ok(filename: str) -> bool:
+    return "." in filename and filename.rsplit(".", 1)[-1].lower() in _ALLOWED_EXTENSIONS
+
+
+def _to_dict(p: Photo) -> dict:
+    return {
+        "id":          p.id,
+        "project_id":  p.project_id,
+        "stage_id":    p.stage_id,
+        "uploaded_by": p.uploaded_by,
+        "description": p.description,
+        "type":        p.type,
+        "visibility":  p.visibility,
+        "url":         f"/api/photos/{p.id}/file" if p.filename else None,
+        "created_at":  p.created_at.isoformat() if p.created_at else None,
+    }
+
+
+@bp.post("/api/projects/<int:project_id>/photos")
+@authorize_project_access
+def upload_photo(project_id: int):
+    stored    = None
+    safe_orig = None
+
+    if "file" in request.files:
+        file = request.files["file"]
+        if not file.filename or not _ext_ok(file.filename):
+            return jsonify({"error": f"Extensão inválida. Use: {', '.join(_ALLOWED_EXTENSIONS)}"}), 422
+
+        header = file.read(16)
+        file.seek(0)
+        mime = _detect_mime(header)
+        if not mime:
+            return jsonify({"error": "Tipo de arquivo inválido"}), 422
+
+        safe_orig = secure_filename(file.filename)
+        stored    = f"{uuid.uuid4().hex}_{safe_orig}"
+        file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], stored))
+    else:
+        # Text-only post: description is required
+        if not (request.form.get("description") or "").strip():
+            return jsonify({"error": "Informe uma descrição ou envie uma foto"}), 422
+
+    photo = Photo(
+        project_id        = project_id,
+        stage_id          = request.form.get("stage_id", type=int),
+        uploaded_by       = int(get_jwt_identity()),
+        filename          = stored,
+        original_filename = safe_orig,
+        description       = request.form.get("description"),
+        type              = request.form.get("type", "progress"),
+        visibility        = request.form.get("visibility", "public"),
+        daily_report_id   = request.form.get("daily_report_id", type=int),
+    )
+    db.session.add(photo)
+    db.session.commit()
+    return jsonify(_to_dict(photo)), 201
+
+
+@bp.get("/api/photos/<int:photo_id>/file")
+def serve_photo(photo_id: int):
+    photo = Photo.query.get_or_404(photo_id)
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], photo.filename)
+
+
+@bp.get("/api/projects/<int:project_id>/feed")
+@authorize_project_access
+def get_feed(project_id: int):
+    photos = (
+        Photo.query
+        .filter_by(project_id=project_id)
+        .order_by(Photo.created_at.desc())
+        .all()
+    )
+    return jsonify([_to_dict(p) for p in photos])

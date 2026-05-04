@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sqlite3 instance/reforma.db \"PRAGMA table_info\\(stage\\);\")",
+      "Bash(sqlite3 instance/reforma.db \"SELECT version_num FROM alembic_version;\")",
+      "Bash(FLASK_APP=run.py uv run flask db upgrade)",
+      "Bash(python -c \"from app import create_app; app=create_app\\(\\); c=app.test_client\\(\\); r=c.get\\('/api/projects/1/dashboard'\\); print\\(r.status_code, r.data[:500]\\)\")",
+      "Bash(npx --no-install eslint src/pages/BOM.jsx)",
+      "Bash(node_modules/.bin/esbuild --bundle=false --loader=jsx src/pages/BOM.jsx)",
+      "Bash(node_modules/.bin/esbuild --loader=jsx src/pages/BOM.jsx)",
+      "Bash(node_modules/.bin/esbuild --loader=jsx --log-level=error src/pages/BOM.jsx)",
+      "Bash(node_modules/.bin/esbuild --loader:.jsx=jsx src/pages/BOM.jsx)"
+    ]
+  }
+}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3 class="mb-4">💸 Gastos</h3>
+
+<div class="card p-3 mb-4">
+    <h5>Adicionar gasto</h5>
+    <form method="POST" class="row g-2">
+
+        <div class="col-md-2">
+            <input class="form-control" name="amount" placeholder="Valor" required>
+        </div>
+
+        <div class="col-md-2">
+            <input type="date" class="form-control" name="date" required>
+        </div>
+
+        <div class="col-md-4">
+            <input class="form-control" name="description" placeholder="Descrição">
+        </div>
+
+        <div class="col-md-2">
+            <select class="form-select" name="category_id">
+                <option value="">Categoria</option>
+                {% for c in categories %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100">Adicionar</button>
+        </div>
+
+    </form>
+</div>
+
+<div class="card p-3">
+    <h5>Lista de gastos</h5>
+
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in expenses %}
+            <tr>
+                <td>{{ e.date.strftime('%d/%m/%Y') }}</td>
+                <td>{{ e.description }}</td>
+                <td>{{ e.category.name if e.category else '-' }}</td>
+                <td><strong>R$ {{ "%.2f"|format(e.amount) }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

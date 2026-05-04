@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>Etapas</h3>
+
+<form method="POST">
+    <input name="name" placeholder="Nome da etapa">
+    <button type="submit">Adicionar</button>
+</form>
+
+<ul>
+{% for s in stages %}
+    <li>{{ s.name }} - {{ s.status }}</li>
+{% endfor %}
+</ul>
+
+{% endblock %}

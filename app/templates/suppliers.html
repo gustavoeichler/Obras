@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>Fornecedores</h3>
+
+<form method="POST">
+    <input name="name" placeholder="Nome">
+    <input name="type" placeholder="Tipo">
+    <input name="contact" placeholder="Contato">
+    <button type="submit">Adicionar</button>
+</form>
+
+<ul>
+{% for s in suppliers %}
+    <li>{{ s.name }} ({{ s.type }})</li>
+{% endfor %}
+</ul>
+
+{% endblock %}
