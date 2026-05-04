@@ -1,4 +1,5 @@
 import os
+import re
 from flask import Flask
 from flask_cors import CORS
 
@@ -15,7 +16,20 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db, directory=os.path.join(os.path.dirname(__file__), '..', 'migrations'))
     jwt.init_app(app)
-    CORS(app, resources={r"/api/*": {"origins": "*"}, r"/auth/*": {"origins": "*"}})
+    # Production Netlify URL, deploy previews (deploy-preview-N--obra-saas.netlify.app),
+    # branch deploys (branchname--obra-saas.netlify.app), and local dev.
+    allowed_origins = [
+        "https://obra-saas.netlify.app",
+        re.compile(r"^https://[\w-]+--obra-saas\.netlify\.app$"),
+        "http://localhost:5173",
+    ]
+    CORS(
+        app,
+        resources={
+            r"/api/*":  {"origins": allowed_origins},
+            r"/auth/*": {"origins": allowed_origins},
+        },
+    )
 
     from app.routes.auth               import bp as auth_bp
     from app.routes.projects           import bp as projects_bp
