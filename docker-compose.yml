@@ -21,7 +21,7 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgresql://user:password@db/reforma
+      DATABASE_URL: postgresql://postgres.udcxcawdkqfcitizunnc:!Vascoda4262!@aws-1-us-east-1.pooler.supabase.com:5432/postgres
       JWT_SECRET_KEY: dev-secret-change-in-prod
       FLASK_APP: run.py
     command: sh -c "pip install -e . && flask db upgrade && python run.py"

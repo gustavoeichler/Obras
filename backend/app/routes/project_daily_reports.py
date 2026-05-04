@@ -1,10 +1,13 @@
 """Daily Site Reports (RDO — Relatório Diário de Obra)."""
 from __future__ import annotations
 
+import base64
+import mimetypes
+import os
 from datetime import date, datetime, timezone
 from io import BytesIO
 
-from flask import Blueprint, abort, jsonify, request, send_file, url_for, render_template
+from flask import Blueprint, abort, current_app, jsonify, request, send_file, url_for, render_template
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from marshmallow import ValidationError
 
@@ -174,9 +177,41 @@ def delete_occurrence(project_id: int, rdo_id: int, occ_id: int):
 
 # ── PDF generation ───────────────────────────────────────────────────────────
 
+def _photo_to_data_uri(photo) -> str | None:
+    """Read the photo file from disk and return a base64 data URI.
+
+    WeasyPrint can't fetch authenticated app URLs from inside the renderer,
+    and self-loopback HTTP is unreliable in serverless environments — embedding
+    the bytes directly is the only fully portable approach.
+    """
+    if not photo.filename:
+        return None
+    path = os.path.join(current_app.config["UPLOAD_FOLDER"], photo.filename)
+    if not os.path.isfile(path):
+        return None
+    mime = mimetypes.guess_type(path)[0] or "image/jpeg"
+    try:
+        with open(path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode("ascii")
+    except OSError:
+        return None
+    return f"data:{mime};base64,{encoded}"
+
+
 def _render_pdf(rdo: DailyReport) -> tuple[bytes, str]:
     project = Project.query.get(rdo.project_id)
     creator = User.query.get(rdo.created_by_user_id) if rdo.created_by_user_id else None
+    photo_items = []
+    for p in (rdo.photos or []):
+        data_uri = _photo_to_data_uri(p)
+        if not data_uri:
+            continue
+        photo_items.append({
+            "id":          p.id,
+            "data_uri":    data_uri,
+            "description": p.description,
+            "created_at":  p.created_at,
+        })
     return pdf_service.render_pdf(
         "pdf/rdo.html",
         {
@@ -184,7 +219,7 @@ def _render_pdf(rdo: DailyReport) -> tuple[bytes, str]:
             "project": project,
             "creator": creator,
             "occurrences": rdo.occurrences,
-            "photos": rdo.photos,
+            "photos": photo_items,
             "generated_at": datetime.now(timezone.utc),
         },
     )
@@ -251,10 +286,21 @@ def public_rdo(token: str):
         return "<h1>Relatório não encontrado</h1>", 404
     project = Project.query.get(rdo.project_id)
     creator = User.query.get(rdo.created_by_user_id) if rdo.created_by_user_id else None
+    photo_items = []
+    for p in (rdo.photos or []):
+        data_uri = _photo_to_data_uri(p)
+        if not data_uri:
+            continue
+        photo_items.append({
+            "id":          p.id,
+            "data_uri":    data_uri,
+            "description": p.description,
+            "created_at":  p.created_at,
+        })
     return render_template(
         "pdf/rdo.html",
         rdo=rdo, project=project, creator=creator,
-        occurrences=rdo.occurrences, photos=rdo.photos,
+        occurrences=rdo.occurrences, photos=photo_items,
         generated_at=datetime.now(timezone.utc),
         public_view=True,
     )

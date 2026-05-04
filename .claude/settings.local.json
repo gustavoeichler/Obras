@@ -9,7 +9,8 @@
       "Bash(node_modules/.bin/esbuild --bundle=false --loader=jsx src/pages/BOM.jsx)",
       "Bash(node_modules/.bin/esbuild --loader=jsx src/pages/BOM.jsx)",
       "Bash(node_modules/.bin/esbuild --loader=jsx --log-level=error src/pages/BOM.jsx)",
-      "Bash(node_modules/.bin/esbuild --loader:.jsx=jsx src/pages/BOM.jsx)"
+      "Bash(node_modules/.bin/esbuild --loader:.jsx=jsx src/pages/BOM.jsx)",
+      "Bash(python -c 'from app import create_app; from app.extensions import db; app = create_app\\(\\); *)"
     ]
   }
 }
