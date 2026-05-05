@@ -28,3 +28,7 @@ class Config:
 
     JWT_SECRET_KEY          = os.environ.get("JWT_SECRET_KEY", "dev-secret-change-in-prod")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
+
+    SUPABASE_URL         = os.environ.get("SUPABASE_URL", "")
+    SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
+    SUPABASE_BUCKET      = os.environ.get("SUPABASE_BUCKET", "obras-photos")

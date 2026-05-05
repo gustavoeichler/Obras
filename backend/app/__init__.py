@@ -2,6 +2,7 @@ import os
 import re
 from flask import Flask
 from flask_cors import CORS
+from supabase import create_client
 
 from config import Config
 from app.extensions import db, migrate, jwt
@@ -11,7 +12,13 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+    if app.config["SUPABASE_URL"] and app.config["SUPABASE_SERVICE_KEY"]:
+        app.supabase = create_client(
+            app.config["SUPABASE_URL"],
+            app.config["SUPABASE_SERVICE_KEY"],
+        )
+    else:
+        app.supabase = None
 
     db.init_app(app)
     migrate.init_app(app, db, directory=os.path.join(os.path.dirname(__file__), '..', 'migrations'))

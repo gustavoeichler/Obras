@@ -1,7 +1,6 @@
-import os
 import uuid
 
-from flask import Blueprint, current_app, jsonify, request, send_from_directory
+from flask import Blueprint, current_app, jsonify, redirect, request
 from flask_jwt_extended import get_jwt_identity
 from werkzeug.utils import secure_filename
 
@@ -30,6 +29,13 @@ def _ext_ok(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[-1].lower() in _ALLOWED_EXTENSIONS
 
 
+def _storage():
+    client = current_app.supabase
+    if client is None:
+        raise RuntimeError("Supabase client not configured — set SUPABASE_URL and SUPABASE_SERVICE_KEY")
+    return client.storage.from_(current_app.config["SUPABASE_BUCKET"])
+
+
 def _to_dict(p: Photo) -> dict:
     return {
         "id":          p.id,
@@ -47,25 +53,32 @@ def _to_dict(p: Photo) -> dict:
 @bp.post("/api/projects/<int:project_id>/photos")
 @authorize_project_access
 def upload_photo(project_id: int):
-    stored    = None
-    safe_orig = None
+    storage_path = None
+    safe_orig    = None
 
     if "file" in request.files:
         file = request.files["file"]
         if not file.filename or not _ext_ok(file.filename):
             return jsonify({"error": f"Extensão inválida. Use: {', '.join(_ALLOWED_EXTENSIONS)}"}), 422
 
-        header = file.read(16)
-        file.seek(0)
-        mime = _detect_mime(header)
+        data = file.read()
+        mime = _detect_mime(data[:16])
         if not mime:
             return jsonify({"error": "Tipo de arquivo inválido"}), 422
 
-        safe_orig = secure_filename(file.filename)
-        stored    = f"{uuid.uuid4().hex}_{safe_orig}"
-        file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], stored))
+        safe_orig    = secure_filename(file.filename)
+        storage_path = f"{project_id}/{uuid.uuid4().hex}_{safe_orig}"
+
+        try:
+            _storage().upload(
+                path=storage_path,
+                file=data,
+                file_options={"content-type": mime},
+            )
+        except Exception as exc:
+            current_app.logger.error("Supabase upload failed: %s", exc)
+            return jsonify({"error": "Falha ao salvar a imagem"}), 500
     else:
-        # Text-only post: description is required
         if not (request.form.get("description") or "").strip():
             return jsonify({"error": "Informe uma descrição ou envie uma foto"}), 422
 
@@ -73,7 +86,7 @@ def upload_photo(project_id: int):
         project_id        = project_id,
         stage_id          = request.form.get("stage_id", type=int),
         uploaded_by       = int(get_jwt_identity()),
-        filename          = stored,
+        filename          = storage_path,
         original_filename = safe_orig,
         description       = request.form.get("description"),
         type              = request.form.get("type", "progress"),
@@ -88,7 +101,17 @@ def upload_photo(project_id: int):
 @bp.get("/api/photos/<int:photo_id>/file")
 def serve_photo(photo_id: int):
     photo = Photo.query.get_or_404(photo_id)
-    return send_from_directory(current_app.config["UPLOAD_FOLDER"], photo.filename)
+    if not photo.filename:
+        return jsonify({"error": "Sem arquivo"}), 404
+
+    try:
+        res = _storage().create_signed_url(photo.filename, expires_in=3600)
+        signed_url = res["signedURL"]
+    except Exception as exc:
+        current_app.logger.error("Supabase signed URL failed: %s", exc)
+        return jsonify({"error": "Não foi possível gerar o link da imagem"}), 500
+
+    return redirect(signed_url, code=302)
 
 
 @bp.get("/api/projects/<int:project_id>/feed")
