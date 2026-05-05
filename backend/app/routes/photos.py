@@ -106,7 +106,8 @@ def serve_photo(photo_id: int):
 
     try:
         res = _storage().create_signed_url(photo.filename, expires_in=3600)
-        signed_url = res["signedURL"]
+        # supabase-py v2 returns an object with .signed_url attribute
+        signed_url = res.signed_url if hasattr(res, "signed_url") else res["signedURL"]
     except Exception as exc:
         current_app.logger.error("Supabase signed URL failed: %s", exc)
         return jsonify({"error": "Não foi possível gerar o link da imagem"}), 500
