@@ -216,25 +216,46 @@ function ProgressCard({ fc }) {
       </div>
       <div className="stat-label">Progresso físico vs tempo</div>
       <div style={{ marginTop: 8, fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-        <ProgressRow label="Físico"  pct={physical} color="var(--accent)" placeholder="sem etapas" />
+        <ProgressRow label="Físico"  pct={physical} color="var(--accent)" placeholder="sem etapas" highlight />
         <ProgressRow label="Tempo"   pct={temporal} color="var(--blue)"   />
       </div>
     </div>
   )
 }
 
-function ProgressRow({ label, pct, color, placeholder }) {
+function ProgressRow({ label, pct, color, placeholder, highlight }) {
   return (
     <div style={{ marginTop: 8 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-muted)' }}>
-        <span>{label}</span>
-        <span style={{ color: 'var(--text)' }}>{pct == null ? '—' : `${pct}%`}</span>
+      <div style={{ color: 'var(--text-muted)', fontSize: highlight ? 10 : undefined,
+        fontFamily: highlight ? 'var(--font-mono)' : undefined,
+        letterSpacing: highlight ? '0.08em' : undefined,
+        textTransform: highlight ? 'uppercase' : undefined,
+        marginBottom: highlight ? 6 : undefined,
+      }}>
+        {!highlight && (
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span>{label}</span>
+            <span style={{ color: 'var(--text)' }}>{pct == null ? '—' : `${pct}%`}</span>
+          </div>
+        )}
+        {highlight && <span>{label}</span>}
       </div>
-      <div style={{ height: 6, background: 'var(--surface-3)', borderRadius: 3, overflow: 'hidden', marginTop: 4 }}>
-        <div style={{
-          height: '100%', width: `${pct ?? 0}%`,
-          background: color, borderRadius: 3, transition: 'width 600ms ease',
-        }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ flex: 1, height: 6, background: 'var(--surface-3)', borderRadius: 3, overflow: 'hidden' }}>
+          <div style={{
+            height: '100%', width: `${pct ?? 0}%`,
+            background: pct === 100 ? 'var(--green)' : color,
+            borderRadius: 3, transition: 'width 800ms ease',
+          }} />
+        </div>
+        {highlight && (
+          <span style={{
+            fontFamily: 'var(--font-display)', fontSize: 22, lineHeight: 1,
+            color: pct == null ? 'var(--text-muted)' : pct === 100 ? 'var(--green)' : color,
+          }}>
+            {pct == null ? '—' : `${pct}%`}
+          </span>
+        )}
       </div>
       {pct == null && placeholder && (
         <div style={{ color: 'var(--text-muted)', fontSize: 10, marginTop: 2 }}>{placeholder}</div>

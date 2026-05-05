@@ -104,30 +104,21 @@ def budget_deviation(project_id, user):
 def _pct_complete(project_id):
     """Return (pct in 0..1, method) or (None, None) when no completion data."""
     from app.models.stage import Stage
-    from app.models.budget import Budget
+    from app.models.task import Task
 
     stages = Stage.query.filter_by(project_id=project_id).all()
     if not stages:
         return None, None
 
-    stage_budgets = defaultdict(float)
-    for b in Budget.query.filter_by(project_id=project_id).all():
-        if b.stage_id:
-            stage_budgets[b.stage_id] += b.planned_amount or 0.0
+    stage_ids = [s.id for s in stages]
+    total_tasks = Task.query.filter(Task.stage_id.in_(stage_ids)).count()
+    if total_tasks == 0:
+        return None, None
 
-    total_weight = sum(stage_budgets.values())
-    if total_weight > 0:
-        weighted = sum(
-            (s.completion_pct or 0) / 100.0 * stage_budgets.get(s.id, 0.0)
-            for s in stages
-        )
-        pct = weighted / total_weight
-        if pct > 0:
-            return min(pct, 1.0), "evm"
-
-    avg = sum((s.completion_pct or 0) for s in stages) / len(stages) / 100.0
-    if avg > 0:
-        return min(avg, 1.0), "stage_avg"
+    done_tasks = Task.query.filter(Task.stage_id.in_(stage_ids), Task.is_done == True).count()
+    pct = done_tasks / total_tasks
+    if pct > 0:
+        return min(pct, 1.0), "evm"
 
     return None, None
 
