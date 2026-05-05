@@ -62,7 +62,9 @@ function StatsStrip({ stages }) {
   const done    = stages.filter(s => s.status === 'concluida').length
   const active  = stages.filter(s => s.status === 'em_andamento').length
   const delayed = stages.filter(s => s.is_delayed).length
-  const globalPct = total > 0 ? Math.round((done / total) * 100) : 0
+  const totalTasks = stages.reduce((acc, s) => acc + (s.total_tasks ?? 0), 0)
+  const doneTasks  = stages.reduce((acc, s) => acc + (s.done_tasks  ?? 0), 0)
+  const globalPct  = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0
 
   return (
     <div className="stats-strip">
