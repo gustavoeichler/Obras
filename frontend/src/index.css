@@ -730,12 +730,12 @@ tbody td {
   align-items: center;
   gap: 7px;
   padding: 9px 18px;
+  min-height: 38px;
   border-radius: var(--radius);
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0;
   cursor: pointer;
   border: none;
   transition: all var(--transition);
@@ -750,7 +750,7 @@ tbody td {
 
 .btn-primary:hover {
   background: #e0aa1a;
-  box-shadow: 0 0 20px var(--accent-glow);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-ghost {
@@ -807,7 +807,7 @@ tbody td {
   border-color: var(--accent);
 }
 
-.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-sm { padding: 6px 12px; font-size: 12px; min-height: 32px; }
 
 /* ─── Form elements ───────────────────────────────────────────── */
 .form-group { margin-bottom: 18px; }
@@ -929,12 +929,12 @@ tbody td {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 4px 10px;
   border-radius: 100px;
   font-size: 11px;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-weight: 500;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
 }
 
 .badge-green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(16,185,129,.2); }
@@ -1369,12 +1369,13 @@ tbody td {
 }
 
 .topbar-role-pill {
-  padding: 2px 7px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  font-size: 9px;
-  letter-spacing: 0.12em;
+  padding: 2px 8px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(212, 160, 23, 0.25);
+  border-radius: var(--radius);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0;
   color: var(--accent);
 }
 
