@@ -8,6 +8,7 @@ export const KIND_META = {
   document:        { label: 'Documentos',  color: '#b46cff' },
   occurrence:      { label: 'Ocorrências', color: '#f08585' },
   stage_milestone: { label: 'Etapas',      color: '#bbb'    },
+  task:            { label: 'Tarefas',     color: '#fd9644' },
 }
 
 const PRESETS = [

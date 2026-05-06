@@ -16,6 +16,7 @@ from app.models.bom import BOMQuotation, BOMProduct, BOMStore, BOMPrice
 from app.models.daily_report import DailyReport
 from app.models.daily_report_occurrence import DailyReportOccurrence
 from app.models.supplier_price_observation import SupplierPriceObservation
+from app.models.task_event import TaskEvent
 
 __all__ = [
     "Category", "Supplier", "Stage", "StageChecklistItem", "StageApproval",
@@ -23,4 +24,5 @@ __all__ = [
     "ProjectClient", "Invitation", "Photo",
     "BOMQuotation", "BOMProduct", "BOMStore", "BOMPrice",
     "DailyReport", "DailyReportOccurrence", "SupplierPriceObservation",
+    "TaskEvent",
 ]

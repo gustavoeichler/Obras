@@ -3,11 +3,23 @@ from flask import abort
 from app.extensions import db
 from app.middleware.auth import check_project_access
 from app.models.task import Task
+from app.models.task_event import TaskEvent
 from app.models.stage import Stage
 
 
 def _stage_or_404(stage_id: int) -> Stage:
     return Stage.query.get_or_404(stage_id)
+
+
+def _log_event(task: Task, action: str, user) -> None:
+    db.session.add(TaskEvent(
+        task_id=task.id,
+        stage_id=task.stage_id,
+        project_id=task.project_id,
+        action=action,
+        task_name=task.name,
+        user_id=getattr(user, 'id', None),
+    ))
 
 
 def create_task(stage_id: int, data: dict, user) -> Task:
@@ -26,6 +38,8 @@ def create_task(stage_id: int, data: dict, user) -> Task:
         project_id=stage.project_id,
     )
     db.session.add(task)
+    db.session.flush()
+    _log_event(task, "created", user)
     db.session.commit()
     return task
 
@@ -44,11 +58,21 @@ def update_task(task_id: int, data: dict, user) -> Task:
 
     check_project_access(task.project_id, user)
 
+    old_done = task.is_done
     if "is_done" in data:
         task.is_done = data["is_done"]
     if "name" in data:
         task.name = data["name"]
     db.session.commit()
+
+    if "is_done" in data:
+        if data["is_done"] and not old_done:
+            _log_event(task, "closed", user)
+            db.session.commit()
+        elif not data["is_done"] and old_done:
+            _log_event(task, "reopened", user)
+            db.session.commit()
+
     return task
 
 

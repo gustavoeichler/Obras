@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import {
   Camera, ClipboardList, DollarSign, FileText, AlertTriangle,
-  Flag, Download, ExternalLink, Cloud, Users,
+  Flag, Download, ExternalLink, Cloud, Users, CheckSquare,
 } from 'lucide-react'
 import { formatBRL } from '../../api/client'
 import { KIND_META } from './TimelineFilters'
@@ -14,6 +14,7 @@ const ICONS = {
   document:        FileText,
   occurrence:      AlertTriangle,
   stage_milestone: Flag,
+  task:            CheckSquare,
 }
 
 function formatTime(iso) {
@@ -65,6 +66,10 @@ export default function TimelineEventCard({ event, projectId, onPhotoClick }) {
 
       {event.kind === 'stage_milestone' && (
         <Milestone event={event} />
+      )}
+
+      {event.kind === 'task' && (
+        <TaskActivity event={event} />
       )}
     </div>
   )
@@ -164,6 +169,25 @@ function Milestone({ event }) {
   return (
     <div className="ev-body">
       <div className="ev-title">{event.title}</div>
+    </div>
+  )
+}
+
+const ACTION_LABELS = {
+  created:  'Tarefa criada',
+  closed:   'Tarefa concluída',
+  reopened: 'Tarefa reaberta',
+}
+
+function TaskActivity({ event }) {
+  const p = event.payload
+  return (
+    <div className="ev-body">
+      <div className="ev-title">{p.task_name}</div>
+      <div className="ev-meta">
+        <span className="badge badge-dim">{ACTION_LABELS[p.action] || p.action}</span>
+        {p.user_email && <span>{p.user_email}</span>}
+      </div>
     </div>
   )
 }

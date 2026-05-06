@@ -23,9 +23,10 @@ from app.models.photo import Photo
 from app.models.stage import Stage
 from app.models.stage_approval import StageApproval
 from app.models.supplier import Supplier
+from app.models.task_event import TaskEvent
 from app.models.user import User
 
-ALL_KINDS = ("photo", "rdo", "expense", "document", "occurrence", "stage_milestone")
+ALL_KINDS = ("photo", "rdo", "expense", "document", "occurrence", "stage_milestone", "task")
 
 
 # ── helpers ─────────────────────────────────────────────────────────────────
@@ -262,6 +263,33 @@ def _stage_milestone_events(project_id: int, stage_id: int | None, q: str | None
     return out
 
 
+def _task_events(project_id: int, stage_id: int | None, q: str | None) -> list[dict]:
+    qry = TaskEvent.query.filter(TaskEvent.project_id == project_id)
+    if stage_id:
+        qry = qry.filter(TaskEvent.stage_id == stage_id)
+    out = []
+    for ev in qry.all():
+        if not _matches_q(q, ev.task_name):
+            continue
+        user = User.query.get(ev.user_id) if ev.user_id else None
+        out.append({
+            "kind":        "task",
+            "id":          f"task_event-{ev.id}",
+            "occurred_at": _to_aware(ev.occurred_at),
+            "stage":       _stage_dict(Stage.query.get(ev.stage_id)) if ev.stage_id else None,
+            "title":       ev.task_name,
+            "body":        None,
+            "payload": {
+                "task_event_id": ev.id,
+                "task_id":       ev.task_id,
+                "action":        ev.action,
+                "task_name":     ev.task_name,
+                "user_email":    user.email if user else None,
+            },
+        })
+    return out
+
+
 _BUILDERS = {
     "photo":           _photo_events,
     "rdo":             _rdo_events,
@@ -269,6 +297,7 @@ _BUILDERS = {
     "document":        _document_events,
     "occurrence":      _occurrence_events,
     "stage_milestone": _stage_milestone_events,
+    "task":            _task_events,
 }
 
 
