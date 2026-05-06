@@ -491,7 +491,7 @@ body {
   .nav-link .nav-chev { display: initial; }
   .nav-link:hover { padding-left: 16px; }
 
-  .sidebar-footer { padding: 14px 16px; }
+  .sidebar-footer { padding: 14px 16px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
   .sidebar-readout { display: block; }
   .sidebar-user {
     padding: 10px 12px;
@@ -507,7 +507,7 @@ body {
   .mobile-nav-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 0, 0, 0.75);
     z-index: 190;
     backdrop-filter: blur(2px);
     animation: fadeIn 160ms ease;
@@ -520,8 +520,8 @@ body {
     top: 14px;
     left: 14px;
     z-index: 210;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     background: var(--surface-2);
     border: 1px solid var(--border-2);
     border-radius: var(--radius);
@@ -2304,8 +2304,12 @@ tbody td {
 
   /* Minimum 44px touch targets for interactive elements */
   .btn { min-height: 44px; }
-  .btn-icon { min-width: 44px; min-height: 44px; }
-  .nav-link { min-height: 44px; }
+  .btn-sm { min-height: 36px; }
+  .btn-icon { min-width: 40px; min-height: 40px; }
+  .nav-link { min-height: 44px; padding: 11px 11px 11px 14px; }
+  .form-input,
+  .form-select,
+  .form-textarea { min-height: 44px; }
   .view-toggle-btn { min-height: 40px; padding: 10px 13px; }
 
   /* iOS safe-area insets */
