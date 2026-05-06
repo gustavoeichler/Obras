@@ -814,18 +814,18 @@ tbody td {
 
 .form-label {
   display: block;
-  font-size: 10px;
-  font-family: var(--font-mono);
+  font-size: 13px;
+  font-family: var(--font-ui);
+  font-weight: 500;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 7px;
+  margin-bottom: 6px;
 }
 
 .form-input,
 .form-select,
 .form-textarea {
   width: 100%;
+  min-height: 42px;
   background: var(--surface-2);
   border: 1px solid var(--border-2);
   border-radius: var(--radius);
@@ -890,7 +890,7 @@ tbody td {
   max-width: 520px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--accent-dim);
+  box-shadow: var(--shadow-lg);
   animation: slideUp 200ms ease;
 }
 
