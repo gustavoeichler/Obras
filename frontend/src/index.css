@@ -574,36 +574,34 @@ body {
 /* ─── Stat Cards ──────────────────────────────────────────────── */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
   border-radius: var(--radius-lg);
   padding: 20px 24px;
   position: relative;
-  overflow: hidden;
-  transition: border-color var(--transition);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), border-color var(--transition);
 }
 
-.stat-card::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border-2), transparent);
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-2);
+  border-top-color: var(--accent);
 }
-
-.stat-card:hover { border-color: var(--border-2); }
 
 .stat-card .stat-icon {
-  width: 36px; height: 36px;
-  border-radius: var(--radius);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--surface-3);
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .stat-card .stat-label {
@@ -636,6 +634,13 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-2);
 }
 
 .card-header {
