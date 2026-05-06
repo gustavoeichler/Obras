@@ -418,7 +418,6 @@ body {
   .sidebar-brand .brand-tag,
   .sidebar-brand .brand-sub { display: none; }
   .sidebar-brand .brand-name { font-size: 18px; letter-spacing: 0.04em; }
-  .sidebar-brand::after { display: none; }
 
   .nav-group { gap: 4px; }
   .nav-group-label {
@@ -477,7 +476,6 @@ body {
   .sidebar-brand .brand-tag,
   .sidebar-brand .brand-sub { display: block; }
   .sidebar-brand .brand-name { font-size: 34px; letter-spacing: 0.06em; }
-  .sidebar-brand::after { display: block; }
 
   .nav-group { gap: 2px; }
   .nav-group-label {
@@ -1854,7 +1852,7 @@ tbody td {
   background: var(--surface-2); border: 1px solid var(--border);
   border-radius: 999px; padding: 4px 8px;
 }
-.rdo-chip.active { border-color: var(--accent); background: rgba(240,180,41,0.08); }
+.rdo-chip.active { border-color: var(--accent); background: var(--accent-dim); }
 .rdo-chip-count { font-family: var(--font-display); font-size: 14px; min-width: 14px; text-align: center; }
 .rdo-chip-label { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); padding-right: 4px; }
 .rdo-occurrences { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
@@ -1869,7 +1867,7 @@ tbody td {
   background: rgba(210,59,59,0.15); color: #f08585;
 }
 .rdo-occ-kind.kind-weather, .rdo-occ-kind.kind-material_shortage {
-  background: rgba(240,180,41,0.15); color: var(--accent);
+  background: var(--accent-glow); color: var(--accent);
 }
 .rdo-photos {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px;
