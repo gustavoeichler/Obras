@@ -67,7 +67,7 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* ─── Typography helpers ──────────────────────────────────────── */
-.font-display { font-family: var(--font-display); letter-spacing: 0.03em; }
+.font-display { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; }
 .font-mono    { font-family: var(--font-mono); }
 .font-ui      { font-family: var(--font-ui); }
 
@@ -148,11 +148,11 @@ body {
 
 .sidebar-brand .brand-name {
   font-family: var(--font-display);
-  font-size: 34px;
-  letter-spacing: 0.06em;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--text);
   line-height: 1;
-  text-shadow: 0 0 24px rgba(212, 160, 23, 0.10);
 }
 
 .sidebar-brand .brand-sub {
@@ -417,7 +417,7 @@ body {
   .sidebar-brand .brand-row { justify-content: center; }
   .sidebar-brand .brand-tag,
   .sidebar-brand .brand-sub { display: none; }
-  .sidebar-brand .brand-name { font-size: 18px; letter-spacing: 0.04em; }
+  .sidebar-brand .brand-name { font-size: 16px; letter-spacing: -0.01em; }
 
   .nav-group { gap: 4px; }
   .nav-group-label {
@@ -475,7 +475,7 @@ body {
   .sidebar-brand .brand-row { justify-content: flex-start; }
   .sidebar-brand .brand-tag,
   .sidebar-brand .brand-sub { display: block; }
-  .sidebar-brand .brand-name { font-size: 34px; letter-spacing: 0.06em; }
+  .sidebar-brand .brand-name { font-size: 26px; letter-spacing: -0.02em; }
 
   .nav-group { gap: 2px; }
   .nav-group-label {
@@ -549,24 +549,26 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   gap: 16px;
 }
 
 .page-title {
   font-family: var(--font-display);
-  font-size: 42px;
-  letter-spacing: 0.04em;
-  line-height: 1;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: var(--lh-tight);
   color: var(--text);
 }
 
 .page-subtitle {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 400;
   color: var(--text-muted);
   margin-top: 6px;
-  letter-spacing: 0.06em;
+  line-height: var(--lh-base);
 }
 
 /* ─── Stat Cards ──────────────────────────────────────────────── */
@@ -605,18 +607,18 @@ body {
 }
 
 .stat-card .stat-label {
-  font-size: 11px;
-  font-family: var(--font-mono);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  font-weight: 500;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
   margin-bottom: 6px;
 }
 
 .stat-card .stat-value {
   font-family: var(--font-display);
-  font-size: 32px;
-  letter-spacing: 0.02em;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   line-height: 1;
   color: var(--text);
 }
@@ -646,11 +648,11 @@ body {
 }
 
 .card-title {
-  font-size: 12px;
-  font-family: var(--font-mono);
+  font-size: 13px;
+  font-family: var(--font-ui);
+  font-weight: 600;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
 }
 
 .card-body { padding: 24px; }
@@ -680,13 +682,11 @@ thead tr {
 thead th {
   padding: 10px 16px;
   text-align: left;
-  font-size: 10px;
-  font-family: var(--font-mono);
+  font-size: 12px;
+  font-family: var(--font-ui);
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
   white-space: nowrap;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 tbody tr {
@@ -909,8 +909,9 @@ tbody td {
 
 .modal-title {
   font-family: var(--font-display);
-  font-size: 22px;
-  letter-spacing: 0.04em;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--text);
 }
 
@@ -1179,12 +1180,12 @@ tbody td {
 }
 
 .auth-wordmark {
-  font-size: clamp(72px, 10vw, 140px);
-  letter-spacing: 0.04em;
+  font-size: clamp(60px, 8vw, 120px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
   line-height: 0.9;
   color: var(--text);
   margin-bottom: 24px;
-  text-shadow: 0 0 60px rgba(212, 160, 23, 0.08);
 }
 
 .auth-hero-sub {
@@ -1236,8 +1237,9 @@ tbody td {
 .auth-form-header { margin-bottom: 32px; }
 
 .auth-form-header h2 {
-  font-size: 32px;
-  letter-spacing: 0.05em;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--text);
   margin-bottom: 6px;
 }
