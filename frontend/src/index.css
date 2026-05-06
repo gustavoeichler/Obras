@@ -744,7 +744,10 @@ body {
 }
 
 /* ─── Table ───────────────────────────────────────────────────── */
-.table-wrap { overflow-x: auto; }
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
 table {
   width: 100%;
@@ -2180,7 +2183,7 @@ tbody td {
     gap: 12px;
     margin-bottom: 20px;
   }
-  .page-title { font-size: 28px; }
+  .page-title { font-size: 22px; }
 
   /* Charts grid: single column */
   .charts-grid { grid-template-columns: 1fr; }
@@ -2237,6 +2240,26 @@ tbody td {
   .modal-body { padding: 16px; }
   .modal-header { padding: 16px; }
   .modal-footer { padding: 12px 16px; }
+}
+
+/* ── Extra small phones (≤ 480px) ────────────────────────────── */
+@media (max-width: 480px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+  .proj-grid {
+    grid-template-columns: 1fr;
+  }
+  .stage-grid {
+    grid-template-columns: 1fr;
+  }
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .page-title { font-size: 20px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
