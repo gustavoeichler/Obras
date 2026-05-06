@@ -662,6 +662,81 @@ body {
 
 .card-body { padding: 24px; }
 
+/* ─── Status boxes (StageCompletionCard, Budget) ─────────────── */
+.status-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  border: 1px solid;
+}
+
+.status-box--green {
+  background: var(--green-dim);
+  border-color: var(--green);
+}
+
+.status-box--orange {
+  background: var(--orange-dim);
+  border-color: var(--orange);
+}
+
+.status-box--red {
+  background: var(--red-dim);
+  border-color: var(--red);
+}
+
+.status-box-body { flex: 1; }
+
+.status-box-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status-box-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.status-box-value {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.status-box--green .status-box-value { color: var(--green); }
+.status-box--orange .status-box-value { color: var(--orange); }
+
+.status-complete-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+
+.status-complete-btn--enabled {
+  background: var(--green);
+  color: white;
+  opacity: 1;
+}
+
+.status-complete-btn--disabled {
+  background: var(--surface-3);
+  color: var(--text-muted);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ─── Charts grid ─────────────────────────────────────────────── */
 .charts-grid {
   display: grid;

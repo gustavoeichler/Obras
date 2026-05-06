@@ -8,9 +8,7 @@ export const StageCompletionCard = ({ stageId, apiClient, onRefresh }) => {
   const toast = useToast()
 
   useEffect(() => {
-    if (stageId) {
-      fetchWorkflow()
-    }
+    if (stageId) fetchWorkflow()
   }, [stageId])
 
   const fetchWorkflow = async () => {
@@ -30,136 +28,67 @@ export const StageCompletionCard = ({ stageId, apiClient, onRefresh }) => {
   const incompletCount = workflow.checklists.filter(c => !c.is_completed).length
   const pendingApprovals = workflow.approvals.filter(a => a.status === 'pending')
   const rejectedApprovals = workflow.approvals.filter(a => a.status === 'rejected')
+  const allApproved = workflow.approvals.length > 0 &&
+    workflow.approvals.filter(a => a.status === 'approved').length === workflow.approvals.length
+  const canComplete = workflow.can_complete && !workflow.is_locked
 
   return (
-    <div style={{
-      background: 'var(--surface)',
-      border: '1px solid var(--border)',
-      borderRadius: 'var(--radius-lg)',
-      padding: '20px'
-    }}>
+    <div className="card" style={{ padding: '20px' }}>
       <div style={{ marginBottom: '16px' }}>
         <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>
           Status de Conclusão
         </h3>
       </div>
 
-      {/* Checklist Status */}
       {workflow.checklists.length > 0 && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '12px',
-          background: incompletCount > 0 ? 'var(--orange-dim)' : 'var(--green-dim)',
-          borderRadius: 'var(--radius)',
-          marginBottom: '12px',
-          border: `1px solid ${incompletCount > 0 ? 'var(--orange)' : 'var(--green)'}`
-        }}>
-          {incompletCount > 0 ? (
-            <AlertCircle size={18} style={{ color: 'var(--orange)', flexShrink: 0 }} />
-          ) : (
-            <CheckCircle size={18} style={{ color: 'var(--green)', flexShrink: 0 }} />
-          )}
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '13px', fontWeight: '500' }}>
+        <div className={`status-box ${incompletCount > 0 ? 'status-box--orange' : 'status-box--green'}`}>
+          {incompletCount > 0
+            ? <AlertCircle size={18} style={{ color: 'var(--orange)', flexShrink: 0 }} />
+            : <CheckCircle size={18} style={{ color: 'var(--green)', flexShrink: 0 }} />
+          }
+          <div className="status-box-body">
+            <div className="status-box-title">
               Checklist: {workflow.checklists.filter(c => c.is_completed).length}/{workflow.checklists.length}
             </div>
             {incompletCount > 0 && (
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                {incompletCount} itens faltando
-              </div>
+              <div className="status-box-sub">{incompletCount} itens faltando</div>
             )}
           </div>
-          <div style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '18px',
-            fontWeight: '600',
-            color: incompletCount > 0 ? 'var(--orange)' : 'var(--green)'
-          }}>
-            {workflow.completion_pct}%
+          <div className="status-box-value">{workflow.completion_pct}%</div>
+        </div>
+      )}
+
+      {pendingApprovals.length > 0 && (
+        <div className="status-box status-box--orange">
+          <Clock size={18} style={{ color: 'var(--orange)', flexShrink: 0 }} />
+          <div className="status-box-body">
+            <div className="status-box-title">Pendente Aprovação</div>
+            <div className="status-box-sub">{pendingApprovals.map(a => a.required_role).join(', ')}</div>
           </div>
         </div>
       )}
 
-      {/* Approvals Status */}
-      {workflow.approvals.length > 0 && (
-        <>
-          {pendingApprovals.length > 0 && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px',
-              background: 'var(--orange-dim)',
-              borderRadius: 'var(--radius)',
-              marginBottom: '12px',
-              border: '1px solid var(--orange)'
-            }}>
-              <Clock size={18} style={{ color: 'var(--orange)', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: '500' }}>
-                  Pendente Aprovação
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  {pendingApprovals.map(a => a.required_role).join(', ')}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {rejectedApprovals.length > 0 && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px',
-              background: 'var(--red-dim)',
-              borderRadius: 'var(--radius)',
-              marginBottom: '12px',
-              border: '1px solid var(--red)'
-            }}>
-              <AlertCircle size={18} style={{ color: 'var(--red)', flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '13px', fontWeight: '500', color: 'var(--red)' }}>
-                  Rejeitado
-                </div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  {rejectedApprovals.map(a => a.required_role).join(', ')}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {workflow.approvals.filter(a => a.status === 'approved').length === workflow.approvals.length && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px',
-              background: 'var(--green-dim)',
-              borderRadius: 'var(--radius)',
-              marginBottom: '12px',
-              border: '1px solid var(--green)'
-            }}>
-              <CheckCircle size={18} style={{ color: 'var(--green)', flexShrink: 0 }} />
-              <div style={{ fontSize: '13px', fontWeight: '500', color: 'var(--green)' }}>
-                Todas as aprovações concluídas
-              </div>
-            </div>
-          )}
-        </>
+      {rejectedApprovals.length > 0 && (
+        <div className="status-box status-box--red">
+          <AlertCircle size={18} style={{ color: 'var(--red)', flexShrink: 0 }} />
+          <div className="status-box-body">
+            <div className="status-box-title" style={{ color: 'var(--red)' }}>Rejeitado</div>
+            <div className="status-box-sub">{rejectedApprovals.map(a => a.required_role).join(', ')}</div>
+          </div>
+        </div>
       )}
 
-      {/* Completion Blockers */}
+      {allApproved && (
+        <div className="status-box status-box--green">
+          <CheckCircle size={18} style={{ color: 'var(--green)', flexShrink: 0 }} />
+          <div className="status-box-title" style={{ color: 'var(--green)' }}>
+            Todas as aprovações concluídas
+          </div>
+        </div>
+      )}
+
       {workflow.completion_blockers.length > 0 && (
-        <div style={{
-          background: 'var(--red-dim)',
-          border: '1px solid var(--red)',
-          borderRadius: 'var(--radius)',
-          padding: '12px',
-          marginTop: '12px'
-        }}>
+        <div className="status-box status-box--red" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
           <div style={{ fontSize: '12px', color: 'var(--red)', fontWeight: '500', marginBottom: '8px' }}>
             ⚠️ Razões para não concluir:
           </div>
@@ -171,22 +100,9 @@ export const StageCompletionCard = ({ stageId, apiClient, onRefresh }) => {
         </div>
       )}
 
-      {/* Complete Button */}
       <button
-        disabled={!workflow.can_complete || workflow.is_locked}
-        style={{
-          width: '100%',
-          marginTop: '16px',
-          padding: '12px',
-          background: workflow.can_complete && !workflow.is_locked ? 'var(--green)' : 'var(--surface-3)',
-          color: workflow.can_complete && !workflow.is_locked ? 'white' : 'var(--text-muted)',
-          border: 'none',
-          borderRadius: 'var(--radius)',
-          fontSize: '13px',
-          fontWeight: '600',
-          cursor: workflow.can_complete && !workflow.is_locked ? 'pointer' : 'not-allowed',
-          opacity: workflow.can_complete && !workflow.is_locked ? '1' : '0.6'
-        }}
+        disabled={!canComplete}
+        className={`status-complete-btn ${canComplete ? 'status-complete-btn--enabled' : 'status-complete-btn--disabled'}`}
         title={!workflow.can_complete ? 'Completa todos os requisitos primeiro' : workflow.is_locked ? 'Etapa está bloqueada' : 'Marcar como concluída'}
       >
         ✓ Concluir Etapa
