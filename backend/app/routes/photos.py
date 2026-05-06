@@ -1,6 +1,6 @@
 import uuid
 
-from flask import Blueprint, current_app, jsonify, redirect, request
+from flask import Blueprint, Response, current_app, jsonify, request
 from flask_jwt_extended import get_jwt_identity
 from werkzeug.utils import secure_filename
 
@@ -105,14 +105,13 @@ def serve_photo(photo_id: int):
         return jsonify({"error": "Sem arquivo"}), 404
 
     try:
-        res = _storage().create_signed_url(photo.filename, expires_in=3600)
-        # supabase-py v2 returns an object with .signed_url attribute
-        signed_url = res.signed_url if hasattr(res, "signed_url") else res["signedURL"]
+        data = _storage().download(photo.filename)
     except Exception as exc:
-        current_app.logger.error("Supabase signed URL failed: %s", exc)
-        return jsonify({"error": "Não foi possível gerar o link da imagem"}), 500
+        current_app.logger.error("Supabase download failed for %s: %s", photo.filename, exc)
+        return jsonify({"error": "Imagem não encontrada"}), 404
 
-    return redirect(signed_url, code=302)
+    mime = _detect_mime(bytes(data[:16])) or "image/jpeg"
+    return Response(data, mimetype=mime)
 
 
 @bp.get("/api/projects/<int:project_id>/feed")
