@@ -8,6 +8,7 @@ Each helper returns a list of fully-shaped event dicts; the public
 """
 from __future__ import annotations
 
+import os
 from datetime import datetime, time, timezone
 from typing import Iterable
 
@@ -73,7 +74,7 @@ def _photo_events(project_id: int, stage_id: int | None, q: str | None) -> list[
             "body":        None,
             "payload": {
                 "photo_id":           p.id,
-                "url":                f"/api/photos/{p.id}/file",
+                "url":                f"{os.environ.get('BACKEND_URL', '').rstrip('/')}/api/photos/{p.id}/file",
                 "description":        p.description,
                 "uploaded_by_email":  uploader.email if uploader else None,
             },

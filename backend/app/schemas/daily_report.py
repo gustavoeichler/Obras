@@ -1,3 +1,5 @@
+import os
+
 from marshmallow import Schema, fields, validate
 
 from app.models.daily_report_occurrence import OCCURRENCE_KINDS
@@ -20,7 +22,9 @@ class DailyReportPhotoSchema(Schema):
     created_at  = fields.DateTime(dump_only=True)
 
     def get_url(self, obj):
-        return f"/api/photos/{obj.id}/file" if obj.filename else None
+        print("Getting URL for photo:", obj.id, "filename:", obj.filename)
+        base = os.environ.get("BACKEND_URL", "").rstrip("/")
+        return f"{base}/api/photos/{obj.id}/file" if obj.filename else None
 
 
 class DailyReportSchema(Schema):
