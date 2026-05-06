@@ -3,18 +3,18 @@
 
 /* ─── Tokens ─────────────────────────────────────────────────── */
 :root {
-  --bg:          #050a14;
-  --surface:     #0d1526;
-  --surface-2:   #111d35;
-  --surface-3:   #162040;
-  --accent:      #f0b429;
-  --accent-glow: rgba(240, 180, 41, 0.18);
-  --accent-dim:  rgba(240, 180, 41, 0.08);
-  --text:        #e8edf7;
-  --text-muted:  #6b7a99;
-  --text-dim:    #2d3c5a;
-  --border:      #1a2744;
-  --border-2:    #243558;
+  --bg:          #0f1117;
+  --surface:     #161b22;
+  --surface-2:   #1c2128;
+  --surface-3:   #21262d;
+  --accent:      #d4a017;
+  --accent-glow: rgba(212, 160, 23, 0.15);
+  --accent-dim:  rgba(212, 160, 23, 0.08);
+  --text:        #e6edf3;
+  --text-muted:  #7d8590;
+  --text-dim:    #3d444d;
+  --border:      #21262d;
+  --border-2:    #30363d;
   --green:       #10b981;
   --green-dim:   rgba(16, 185, 129, 0.12);
   --red:         #f43f5e;
@@ -24,14 +24,24 @@
   --blue:        #60a5fa;
   --blue-dim:    rgba(96, 165, 250, 0.12);
 
-  --font-display: 'Anton', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
   --font-mono:    'IBM Plex Mono', monospace;
-  --font-ui:      'Barlow Condensed', sans-serif;
+  --font-ui:      'Inter', sans-serif;
 
   --radius:    6px;
   --radius-lg: 12px;
   --sidebar-w: 240px;
   --transition: 160ms ease;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+
+  --lh-tight: 1.2;
+  --lh-base:  1.5;
+  --lh-loose: 1.7;
+
+  --space-page-mobile: 16px;
 }
 
 /* ─── Base ───────────────────────────────────────────────────── */
@@ -47,28 +57,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Blueprint grid background */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(240, 180, 41, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(240, 180, 41, 0.025) 1px, transparent 1px);
-  background-size: 48px 48px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Vignette overlay */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(5, 10, 20, 0.7) 100%);
-  pointer-events: none;
-  z-index: 0;
-}
 
 #root { position: relative; z-index: 1; }
 
@@ -106,8 +94,7 @@ body::after {
   position: fixed;
   left: 0; top: 0; bottom: 0;
   width: var(--sidebar-w);
-  background:
-    linear-gradient(180deg, var(--surface) 0%, #0a1220 100%);
+  background: var(--surface);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -115,17 +102,6 @@ body::after {
   overflow: hidden;
 }
 
-/* subtle blueprint grid on the rail itself */
-.sidebar::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(240, 180, 41, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(240, 180, 41, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
-  pointer-events: none;
-}
 
 /* amber capline */
 .sidebar::before {
@@ -165,9 +141,9 @@ body::after {
   letter-spacing: 0.2em;
   text-transform: uppercase;
   padding: 2px 6px;
-  border: 1px solid rgba(240, 180, 41, 0.35);
+  border: 1px solid rgba(212, 160, 23, 0.35);
   border-radius: 2px;
-  background: rgba(240, 180, 41, 0.05);
+  background: rgba(212, 160, 23, 0.05);
 }
 
 .sidebar-brand .brand-name {
@@ -176,7 +152,7 @@ body::after {
   letter-spacing: 0.06em;
   color: var(--text);
   line-height: 1;
-  text-shadow: 0 0 24px rgba(240, 180, 41, 0.15);
+  text-shadow: 0 0 24px rgba(212, 160, 23, 0.10);
 }
 
 .sidebar-brand .brand-sub {
@@ -187,15 +163,6 @@ body::after {
   letter-spacing: 0.08em;
 }
 
-/* tiny blueprint crosshair in corner */
-.sidebar-brand::after {
-  content: '';
-  position: absolute;
-  right: 14px; top: 14px;
-  width: 10px; height: 10px;
-  border-top: 1px solid rgba(240, 180, 41, 0.4);
-  border-right: 1px solid rgba(240, 180, 41, 0.4);
-}
 
 /* ── Nav */
 .sidebar-nav {
@@ -234,7 +201,7 @@ body::after {
 
 .nav-group--accent .nav-group-label { color: var(--accent); opacity: 0.8; }
 .nav-group--accent .nav-group-label::after {
-  background: linear-gradient(to right, rgba(240, 180, 41, 0.3), transparent);
+  background: linear-gradient(to right, rgba(212, 160, 23, 0.25), transparent);
 }
 
 .nav-group-items {
@@ -345,7 +312,7 @@ body::after {
   color: var(--accent);
   letter-spacing: 0.02em;
   line-height: 1;
-  text-shadow: 0 0 12px rgba(240, 180, 41, 0.18);
+  text-shadow: 0 0 12px rgba(212, 160, 23, 0.12);
 }
 
 .readout-ticker {
@@ -387,8 +354,8 @@ body::after {
 .user-avatar {
   width: 32px; height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent) 0%, #c8971f 100%);
-  color: #050a14;
+  background: linear-gradient(135deg, var(--accent) 0%, #b8880f 100%);
+  color: #0f1117;
   font-family: var(--font-display);
   font-size: 16px;
   letter-spacing: 0;
@@ -396,7 +363,7 @@ body::after {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 0 0 2px rgba(240, 180, 41, 0.15);
+  box-shadow: 0 0 0 2px rgba(212, 160, 23, 0.10);
 }
 
 .user-meta {
@@ -544,7 +511,7 @@ body::after {
   .mobile-nav-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(5, 10, 20, 0.72);
+    background: rgba(0, 0, 0, 0.65);
     z-index: 190;
     backdrop-filter: blur(2px);
     animation: fadeIn 160ms ease;
@@ -780,11 +747,11 @@ tbody td {
 
 .btn-primary {
   background: var(--accent);
-  color: #050a14;
+  color: #0f1117;
 }
 
 .btn-primary:hover {
-  background: #f7c84a;
+  background: #e0aa1a;
   box-shadow: 0 0 20px var(--accent-glow);
 }
 
@@ -902,7 +869,7 @@ tbody td {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 10, 20, 0.85);
+  background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
@@ -1219,7 +1186,7 @@ tbody td {
   line-height: 0.9;
   color: var(--text);
   margin-bottom: 24px;
-  text-shadow: 0 0 60px rgba(240, 180, 41, 0.1);
+  text-shadow: 0 0 60px rgba(212, 160, 23, 0.08);
 }
 
 .auth-hero-sub {
@@ -1297,7 +1264,7 @@ tbody td {
 }
 
 .auth-switch a { color: var(--accent); text-decoration: none; font-weight: 600; transition: color var(--transition); }
-.auth-switch a:hover { color: #f7c84a; }
+.auth-switch a:hover { color: #e0aa1a; }
 
 /* Role picker */
 .role-grid {
@@ -1357,7 +1324,7 @@ tbody td {
   position: sticky;
   top: 0; z-index: 100;
   height: 54px;
-  background: rgba(5, 10, 20, 0.88);
+  background: rgba(0, 0, 0, 0.80);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   padding: 0 40px;
@@ -1497,7 +1464,7 @@ tbody td {
   font-size: 11px; color: var(--accent); letter-spacing: 0.06em;
   transition: gap var(--transition), color var(--transition);
 }
-.proj-card:hover .proj-card-cta { gap: 8px; color: #f7c84a; }
+.proj-card:hover .proj-card-cta { gap: 8px; color: #e0aa1a; }
 
 .proj-empty {
   display: flex; flex-direction: column; align-items: center;
@@ -1929,7 +1896,7 @@ tbody td {
   position: sticky;
   top: 0;
   z-index: 4;
-  background: rgba(5, 10, 20, 0.92);
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 10px 0 12px;
