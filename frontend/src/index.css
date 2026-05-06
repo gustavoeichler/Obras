@@ -1403,9 +1403,9 @@ tbody td {
 .topbar {
   position: sticky;
   top: 0; z-index: 100;
-  height: 54px;
-  background: rgba(0, 0, 0, 0.80);
-  backdrop-filter: blur(16px);
+  height: 56px;
+  background: rgba(15, 17, 23, 0.92);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   padding: 0 40px;
 }
@@ -1424,25 +1424,27 @@ tbody td {
 
 .topbar-back {
   display: flex; align-items: center; gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px; color: var(--text-muted);
-  text-decoration: none; letter-spacing: 0.06em;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
   transition: color var(--transition);
 }
 .topbar-back:hover { color: var(--text); }
 
 .topbar-user {
   display: flex; align-items: center; gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 11px; color: var(--text-muted);
-  letter-spacing: 0.04em;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 .topbar-title {
-  font-size: 11px;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  font-weight: 500;
   color: var(--text-muted);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   padding-left: 16px;
   border-left: 1px solid var(--border);
   margin-left: 4px;
