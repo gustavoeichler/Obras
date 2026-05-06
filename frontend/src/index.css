@@ -2240,6 +2240,9 @@ tbody td {
     grid-template-columns: 1fr;
   }
   .page-title { font-size: 20px; }
+  .modal-body   { padding: 16px; }
+  .modal-header { padding: 16px; }
+  .modal-footer { padding: 12px 16px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
