@@ -37,6 +37,7 @@ def _storage():
 
 
 def _to_dict(p: Photo) -> dict:
+    base = current_app.config.get("BACKEND_URL", "").rstrip("/")
     return {
         "id":          p.id,
         "project_id":  p.project_id,
@@ -45,7 +46,7 @@ def _to_dict(p: Photo) -> dict:
         "description": p.description,
         "type":        p.type,
         "visibility":  p.visibility,
-        "url":         f"/api/photos/{p.id}/file" if p.filename else None,
+        "url":         f"{base}/api/photos/{p.id}/file" if p.filename else None,
         "created_at":  p.created_at.isoformat() if p.created_at else None,
     }
 

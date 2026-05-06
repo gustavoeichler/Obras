@@ -32,3 +32,4 @@ class Config:
     SUPABASE_URL         = os.environ.get("SUPABASE_URL", "")
     SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
     SUPABASE_BUCKET      = os.environ.get("SUPABASE_BUCKET", "obras-photos")
+    BACKEND_URL          = os.environ.get("BACKEND_URL", "")
