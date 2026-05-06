@@ -840,3 +840,30 @@ tr:hover .bom__row-del { color: var(--text-dim); }
     box-shadow: 0 0 32px var(--accent-glow);
   }
 }
+
+/* ── Mobile (< 768px) ───────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* compensate for Layout's mobile padding (68px top, 16px sides) */
+  .bom { margin: -68px -16px -24px; min-height: calc(100vh - 68px); }
+
+  /* single column — rail already hidden at 900px */
+  .bom { grid-template-columns: 1fr; }
+
+  /* sheet: tighter padding so table has more horizontal room */
+  .bom__sheet { padding: 16px 12px 60px; }
+
+  /* title block: stack vertically */
+  .bom__title-block { grid-template-columns: 1fr; gap: 10px; }
+
+  /* reduce giant title font */
+  .bom__title-input { font-size: 28px; padding: 4px 0; }
+
+  /* title meta: allow wrapping */
+  .bom__title-meta { white-space: normal; grid-template-columns: auto 1fr; }
+
+  /* stamp total: smaller on mobile */
+  .bom__stamp-total { font-size: 30px; }
+
+  /* floating summary chip: adjust for mobile hamburger */
+  .bom__summary-mobile { right: 12px; bottom: 12px; padding: 10px 14px; }
+}

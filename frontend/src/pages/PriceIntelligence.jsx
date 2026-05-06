@@ -36,6 +36,7 @@ export default function PriceIntelligence() {
         </div>
       ) : (
         <div className="card" style={{ padding: 0 }}>
+          <div className="table-wrap">
           <table>
             <thead>
               <tr>
@@ -67,6 +68,7 @@ export default function PriceIntelligence() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

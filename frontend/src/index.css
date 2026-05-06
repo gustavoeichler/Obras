@@ -481,6 +481,104 @@ body::after {
   .main-content { padding: 20px 18px; }
 }
 
+/* Hidden on desktop; shown only inside the mobile media query below */
+.mobile-menu-btn { display: none; }
+
+/* ─── Mobile nav drawer (< 768px) ────────────────────────────── */
+@media (max-width: 767px) {
+  :root { --sidebar-w: 0px; }
+
+  /* Sidebar becomes an overlay drawer */
+  .sidebar {
+    width: 240px;
+    transform: translateX(-260px);
+    transition: transform 240ms ease, box-shadow 240ms ease;
+    z-index: 200;
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+    box-shadow: 4px 0 40px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Reset icon-only overrides from the 960px breakpoint */
+  .sidebar-brand {
+    padding: 24px 20px 20px;
+    text-align: left;
+  }
+  .sidebar-brand .brand-row { justify-content: flex-start; }
+  .sidebar-brand .brand-tag,
+  .sidebar-brand .brand-sub { display: block; }
+  .sidebar-brand .brand-name { font-size: 34px; letter-spacing: 0.06em; }
+  .sidebar-brand::after { display: block; }
+
+  .nav-group { gap: 2px; }
+  .nav-group-label {
+    font-size: 9px;
+    padding: 4px 10px 8px;
+    gap: 8px;
+  }
+  .nav-group-label::after { margin: 0; }
+
+  .nav-link {
+    justify-content: flex-start;
+    padding: 9px 11px 9px 14px;
+  }
+  .nav-link .nav-link-label,
+  .nav-link .nav-chev { display: initial; }
+  .nav-link:hover { padding-left: 16px; }
+
+  .sidebar-footer { padding: 14px 16px; }
+  .sidebar-readout { display: block; }
+  .sidebar-user {
+    padding: 10px 12px;
+    justify-content: flex-start;
+  }
+  .user-meta { display: block; }
+  .user-logout { padding: 6px; }
+
+  /* Main content: full width, top padding leaves room for the fixed menu button */
+  .main-content { margin-left: 0; padding: 68px 16px 24px; }
+
+  /* Backdrop overlay */
+  .mobile-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 10, 20, 0.72);
+    z-index: 190;
+    backdrop-filter: blur(2px);
+    animation: fadeIn 160ms ease;
+  }
+
+  /* Fixed hamburger / close button — always visible, independent of page Topbar */
+  .mobile-menu-btn {
+    display: flex;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 210;
+    width: 40px;
+    height: 40px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius);
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+    transition: background var(--transition), border-color var(--transition);
+  }
+
+  .mobile-menu-btn:hover {
+    background: var(--surface-3);
+    border-color: var(--accent);
+  }
+
+  /* Topbar: reduce padding */
+  .topbar { padding: 0 16px; }
+}
+
 /* ─── Page header ─────────────────────────────────────────────── */
 .page-header {
   display: flex;
@@ -2027,4 +2125,165 @@ tbody td {
   .lightbox-nav.next { right: 6px; }
   .filters-row .form-select { max-width: 100%; flex: 1 1 100%; }
   .search-input { max-width: 100%; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Phase 2 — Global layout & shared components
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Mobile (< 768px) ─────────────────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* Page header: stack title + actions vertically */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .page-title { font-size: 28px; }
+
+  /* Charts grid: single column */
+  .charts-grid { grid-template-columns: 1fr; }
+
+  /* Form rows: single column */
+  .form-row { grid-template-columns: 1fr; }
+
+  /* Card header: allow wrapping so actions don't overflow */
+  .card-header { flex-wrap: wrap; }
+
+  /* Modal: bottom sheet on mobile */
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .modal {
+    max-width: 100%;
+    width: 100%;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 92vh;
+  }
+  .modal-footer { flex-wrap: wrap; }
+
+  /* Toast: full width, inset from edges */
+  .toast-container { left: 12px; right: 12px; bottom: 12px; }
+  .toast { max-width: 100%; }
+
+  /* Topbar: hide email — too long on small screens */
+  .topbar-user { display: none; }
+
+  /* Project dashboard: reduce internal padding */
+  .proj-dash-inner { padding: 20px 0 40px; }
+
+  /* Filters bar selects: allow narrower */
+  .filters-bar .form-select { min-width: 120px; }
+
+  /* Table wrap: enable momentum scrolling on iOS */
+  .table-wrap { -webkit-overflow-scrolling: touch; }
+}
+
+/* ── Very small phones (< 480px) ─────────────────────────────── */
+@media (max-width: 479px) {
+
+  /* Force stat cards to single column */
+  .stat-grid { grid-template-columns: 1fr; }
+
+  /* Further reduce page title */
+  .page-title { font-size: 24px; }
+
+  /* Hide role pill — not enough room */
+  .topbar-role-pill { display: none; }
+
+  /* Compact modal body padding */
+  .modal-body { padding: 16px; }
+  .modal-header { padding: 16px; }
+  .modal-footer { padding: 12px 16px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Phase 3 — Core list & card pages
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+  /* Stats strip: 2×2 grid instead of one long row */
+  .stat-box { flex: 1 1 calc(50% - 6px); }
+  .stat-progress-box { min-width: 0; flex: 1 1 100%; }
+
+  /* Budget card numbers row: single column */
+  .budget-nums-row { grid-template-columns: 1fr !important; }
+
+  /* Pipeline view: tighten left rail on mobile */
+  .pipeline-wrap { padding-left: 42px; }
+  .pipeline-node { left: -34px; width: 28px; height: 28px; }
+
+  /* Pipeline cards: stack content vertically if actions overflow */
+  .pipeline-card { flex-wrap: wrap; gap: 10px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Phase 4 — Data-heavy pages
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+  /* Analytics health rows: drop the explanation column, keep label + value */
+  .health-row {
+    grid-template-columns: auto auto !important;
+    padding: 10px 16px !important;
+    gap: 8px !important;
+  }
+  .health-row > span:nth-child(2) { display: none; }
+
+  /* Daily report list rows: allow meta chips to wrap */
+  .rdo-row-meta { flex-wrap: wrap; gap: 4px; }
+
+  /* Daily report editor: reduce section card padding on mobile */
+  .rdo-section-h { font-size: 10px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Phase 5 — Complex & specialised pages
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+  /* Timeline: sticky day header no longer needs offset */
+  .timeline-day-header { top: 68px; }
+
+  /* Timeline filters: stack search input full-width */
+  .search-input { max-width: 100%; min-width: 0; }
+
+  /* Timeline rail: narrow indent on mobile */
+  .timeline-rail { padding-left: 12px; margin-left: 2px; }
+
+  /* Price Intelligence table: ensure card clips table scroll */
+  .card .table-wrap { border-radius: var(--radius-lg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Phase 6 — Polish & quality pass
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+
+  /* Minimum 44px touch targets for interactive elements */
+  .btn { min-height: 44px; }
+  .btn-icon { min-width: 44px; min-height: 44px; }
+  .nav-link { min-height: 44px; }
+  .view-toggle-btn { min-height: 40px; padding: 10px 13px; }
+
+  /* iOS safe-area insets */
+  .mobile-menu-btn {
+    top: max(14px, calc(env(safe-area-inset-top, 0px) + 14px));
+    left: max(14px, calc(env(safe-area-inset-left, 0px) + 14px));
+  }
+  .toast-container {
+    bottom: max(12px, calc(env(safe-area-inset-bottom, 0px) + 12px));
+  }
+  .mobile-nav-backdrop { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+  /* Sidebar safe area on notched phones */
+  .sidebar { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+  /* Remove hover effects that don't make sense on touch */
+  .proj-card:hover,
+  .stage-card:hover,
+  .pipeline-card:hover { transform: none; }
 }

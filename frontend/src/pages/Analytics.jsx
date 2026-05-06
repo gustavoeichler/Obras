@@ -300,7 +300,7 @@ function HealthCard({ fc }) {
           const good = has && r.goodWhen(r.value)
           const color = !has ? 'var(--text-muted)' : good ? 'var(--green)' : 'var(--red)'
           return (
-            <div key={r.label} style={{
+            <div key={r.label} className="health-row" style={{
               display: 'grid', gridTemplateColumns: '70px 1fr auto',
               alignItems: 'center', padding: '12px 24px',
               borderTop: '1px solid var(--border)',

@@ -7,11 +7,13 @@ import {
 import { useEffect, useState } from 'react'
 import { project, formatBRL } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import { useMobileNav } from '../context/MobileNavContext'
 
 export default function Sidebar() {
   const [total, setTotal] = useState(null)
   const { user, logout } = useAuth()
   const nav = useNavigate()
+  const { isOpen } = useMobileNav()
   const projectMatch = useMatch('/projects/:id/*')
   const rootMatch    = useMatch('/projects/:id')
   const projectId = projectMatch?.params?.id || rootMatch?.params?.id
@@ -30,7 +32,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${isOpen ? ' sidebar--open' : ''}`}>
       <div className="sidebar-brand">
         <div className="brand-row">
           <Compass size={14} className="brand-compass" />

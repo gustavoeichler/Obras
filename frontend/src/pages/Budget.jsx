@@ -83,7 +83,7 @@ function BudgetCard({ budget, onEdit, onDelete }) {
       </div>
 
       {/* Numbers row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+      <div className="budget-nums-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
         <div style={{ background: 'var(--surface-2)', borderRadius: 'var(--radius)', padding: '10px 14px' }}>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Realizado</div>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 14, fontWeight: 600, color: meta.color }}>{formatBRL(budget.realized_amount)}</div>
