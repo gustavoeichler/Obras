@@ -5,11 +5,10 @@ import {
   AlertTriangle, FileText, Share2, Camera, Save,
   ChevronRight, ListChecks,
 } from 'lucide-react'
-import { project, projectsApi, projectStagesApi, tasksApi } from '../api/client'
+import { project, projectsApi, projectStagesApi, tasksApi, authed } from '../api/client'
 import { useToast } from '../components/Toast'
 import MicRecorderButton from '../components/MicRecorderButton'
 import OccurrenceModal, { OCCURRENCE_LABELS } from '../components/OccurrenceModal'
-import { authed } from '../api/client'
 
 const DEFAULT_ROLES = ['pedreiro', 'servente', 'oficial', 'eletricista', 'encanador']
 
@@ -146,9 +145,10 @@ export default function DailyReportEditor() {
     }
   }
 
-  async function addNote(data) {
+  async function addNote(data, inputEl = null) {
     try {
       await api.dailyReports.addNote(rid, data)
+      if (inputEl) inputEl.value = ''
       await load()
     } catch {
       toast('Erro ao salvar nota', 'error')
@@ -167,8 +167,7 @@ export default function DailyReportEditor() {
   function saveNoteOnBlur(e, noteData) {
     const value = e.target.value.trim()
     if (!value) return
-    addNote({ ...noteData, comment: value })
-    e.target.value = ''
+    addNote({ ...noteData, comment: value }, e.target)
   }
 
   return (
