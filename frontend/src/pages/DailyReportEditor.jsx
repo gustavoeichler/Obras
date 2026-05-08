@@ -3,8 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft, Cloud, Users, Plus, Minus, Trash2,
   AlertTriangle, FileText, Share2, Camera, Save,
+  ChevronRight, ListChecks,
 } from 'lucide-react'
-import { project, projectsApi } from '../api/client'
+import { project, projectsApi, projectStagesApi, tasksApi } from '../api/client'
 import { useToast } from '../components/Toast'
 import MicRecorderButton from '../components/MicRecorderButton'
 import OccurrenceModal, { OCCURRENCE_LABELS } from '../components/OccurrenceModal'
@@ -22,6 +23,9 @@ export default function DailyReportEditor() {
   const [savingNotes, setSavingNotes] = useState(false)
   const [occurrenceModal, setOccurrenceModal] = useState(false)
   const fileRef = useRef(null)
+  const [expandedStages, setExpandedStages] = useState({})
+  const [stageTasks, setStageTasks] = useState({})
+  const [tasksFetched, setTasksFetched] = useState({})
 
   const load = useCallback(() =>
     api.dailyReports.get(rid).then(setRdo)
@@ -101,6 +105,70 @@ export default function DailyReportEditor() {
     } catch {
       toast('Erro ao gerar link', 'error')
     }
+  }
+
+  async function toggleStage(stageId) {
+    const willOpen = !expandedStages[stageId]
+    setExpandedStages(prev => ({ ...prev, [stageId]: willOpen }))
+    if (willOpen && !tasksFetched[stageId]) {
+      try {
+        const tasks = await tasksApi.list(stageId)
+        setStageTasks(prev => ({ ...prev, [stageId]: tasks }))
+        setTasksFetched(prev => ({ ...prev, [stageId]: true }))
+      } catch {
+        toast('Erro ao carregar tarefas', 'error')
+      }
+    }
+  }
+
+  async function closeStage(stageId) {
+    if (!confirm('Marcar etapa como concluída?')) return
+    try {
+      await projectStagesApi.updateStatus(stageId, { status: 'concluida' })
+      setStages(prev => prev.map(s => s.id === stageId ? { ...s, status: 'concluida' } : s))
+      toast('Etapa concluída')
+    } catch {
+      toast('Erro ao concluir etapa', 'error')
+    }
+  }
+
+  async function toggleTask(stageId, taskId, isDone) {
+    try {
+      await tasksApi.update(taskId, { is_done: isDone })
+      setStageTasks(prev => ({
+        ...prev,
+        [stageId]: (prev[stageId] || []).map(t =>
+          t.id === taskId ? { ...t, is_done: isDone } : t
+        ),
+      }))
+    } catch {
+      toast('Erro ao atualizar tarefa', 'error')
+    }
+  }
+
+  async function addNote(data) {
+    try {
+      await api.dailyReports.addNote(rid, data)
+      await load()
+    } catch {
+      toast('Erro ao salvar nota', 'error')
+    }
+  }
+
+  async function deleteNote(noteId) {
+    try {
+      await api.dailyReports.deleteNote(rid, noteId)
+      await load()
+    } catch {
+      toast('Erro ao remover nota', 'error')
+    }
+  }
+
+  function saveNoteOnBlur(e, noteData) {
+    const value = e.target.value.trim()
+    if (!value) return
+    addNote({ ...noteData, comment: value })
+    e.target.value = ''
   }
 
   return (
@@ -198,6 +266,89 @@ export default function DailyReportEditor() {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      {/* Stages & Tasks */}
+      <section className="card" style={{ marginBottom: 14 }}>
+        <div className="rdo-section-h">
+          <ListChecks size={14} /> Etapas e Tarefas
+        </div>
+        {stages.length === 0 ? (
+          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Nenhuma etapa cadastrada.</div>
+        ) : (
+          <div className="rdo-stages">
+            {stages.map(stage => {
+              const isExpanded = !!expandedStages[stage.id]
+              const tasks = stageTasks[stage.id] || []
+              const stageNotes = (rdo.rdo_notes || []).filter(n => n.stage_id === stage.id)
+              return (
+                <div key={stage.id} className="rdo-stage">
+                  <div className="rdo-stage-header" onClick={() => toggleStage(stage.id)}>
+                    <ChevronRight size={12} className={`rdo-chevron${isExpanded ? ' open' : ''}`} />
+                    <span className="rdo-stage-name">{stage.name}</span>
+                    {stage.status === 'concluida' ? (
+                      <span className="rdo-stage-badge done">Concluída</span>
+                    ) : (
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={e => { e.stopPropagation(); closeStage(stage.id) }}
+                      >
+                        Concluir
+                      </button>
+                    )}
+                  </div>
+                  {isExpanded && (
+                    <div className="rdo-stage-body">
+                      <input
+                        className="form-input rdo-note-input"
+                        placeholder="Nota sobre esta etapa…"
+                        onKeyDown={e => { if (e.key === 'Enter') saveNoteOnBlur(e, { stage_id: stage.id }) }}
+                        onBlur={e => saveNoteOnBlur(e, { stage_id: stage.id })}
+                      />
+                      {stageNotes.map(n => (
+                        <div key={n.id} className="rdo-note-item">
+                          <span>{n.comment}</span>
+                          <button className="btn-icon danger" onClick={() => deleteNote(n.id)}>
+                            <Trash2 size={10} />
+                          </button>
+                        </div>
+                      ))}
+                      {tasks.map(task => {
+                        const taskNotes = (rdo.rdo_notes || []).filter(n => n.task_id === task.id)
+                        return (
+                          <div key={task.id} className="rdo-task">
+                            <div className="rdo-task-row">
+                              <input
+                                type="checkbox"
+                                checked={!!task.is_done}
+                                onChange={e => toggleTask(stage.id, task.id, e.target.checked)}
+                              />
+                              <span className={task.is_done ? 'rdo-task-done' : ''}>{task.name}</span>
+                            </div>
+                            <input
+                              className="form-input rdo-note-input"
+                              placeholder="Nota sobre esta tarefa…"
+                              onKeyDown={e => { if (e.key === 'Enter') saveNoteOnBlur(e, { task_id: task.id }) }}
+                              onBlur={e => saveNoteOnBlur(e, { task_id: task.id })}
+                            />
+                            {taskNotes.map(n => (
+                              <div key={n.id} className="rdo-note-item">
+                                <span>{n.comment}</span>
+                                <button className="btn-icon danger" onClick={() => deleteNote(n.id)}>
+                                  <Trash2 size={10} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         )}
       </section>
 
