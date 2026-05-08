@@ -191,7 +191,7 @@ def add_note(project_id: int, rdo_id: int):
     except ValidationError as err:
         return jsonify({"errors": err.messages}), 422
     if not data.get("stage_id") and not data.get("task_id"):
-        return jsonify({"error": "stage_id or task_id is required"}), 400
+        return jsonify({"error": "Bad Request", "message": "stage_id or task_id is required"}), 400
     note = DailyReportNote(
         daily_report_id=rdo.id,
         stage_id=data.get("stage_id"),
