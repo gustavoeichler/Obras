@@ -15,6 +15,15 @@ class DailyReportOccurrenceSchema(Schema):
     created_at      = fields.DateTime(dump_only=True)
 
 
+class DailyReportNoteSchema(Schema):
+    id              = fields.Int(dump_only=True)
+    daily_report_id = fields.Int(dump_only=True)
+    stage_id        = fields.Int(load_default=None, allow_none=True)
+    task_id         = fields.Int(load_default=None, allow_none=True)
+    comment         = fields.Str(required=True, validate=validate.Length(min=1, max=2000))
+    created_at      = fields.DateTime(dump_only=True)
+
+
 class DailyReportPhotoSchema(Schema):
     id          = fields.Int(dump_only=True)
     description = fields.Str(dump_only=True)
@@ -42,3 +51,4 @@ class DailyReportSchema(Schema):
 
     occurrences = fields.List(fields.Nested(DailyReportOccurrenceSchema), dump_only=True)
     photos      = fields.List(fields.Nested(DailyReportPhotoSchema),      dump_only=True)
+    rdo_notes   = fields.List(fields.Nested(DailyReportNoteSchema),       dump_only=True)
