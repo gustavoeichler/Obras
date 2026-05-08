@@ -14,6 +14,7 @@ from marshmallow import ValidationError
 from app.extensions import db
 from app.middleware.auth import authorize_project_access, check_project_access
 from app.models.daily_report import DailyReport
+from app.models.daily_report_note import DailyReportNote
 from app.models.daily_report_occurrence import DailyReportOccurrence
 from app.models.document import Document
 from app.models.project import Project
@@ -22,6 +23,7 @@ from app.models.user import User
 from app.schemas.daily_report import (
     DailyReportSchema,
     DailyReportOccurrenceSchema,
+    DailyReportNoteSchema,
     DailyReportPhotoSchema,
 )
 from app.services import pdf_service, share_link_service, weather_service
@@ -32,6 +34,8 @@ report_schema       = DailyReportSchema()
 occurrence_schema   = DailyReportOccurrenceSchema()
 photo_schema_many   = DailyReportPhotoSchema(many=True)
 occurrence_schema_m = DailyReportOccurrenceSchema(many=True)
+note_schema   = DailyReportNoteSchema()
+note_schema_m = DailyReportNoteSchema(many=True)
 
 
 def _user() -> User:
@@ -43,6 +47,7 @@ def _serialize_report(rdo: DailyReport) -> dict:
     base = report_schema.dump(rdo)
     base["occurrences"] = occurrence_schema_m.dump(rdo.occurrences or [])
     base["photos"]      = photo_schema_many.dump(rdo.photos or [])
+    base["rdo_notes"]   = note_schema_m.dump(rdo.rdo_notes or [])
     return base
 
 
@@ -171,6 +176,41 @@ def delete_occurrence(project_id: int, rdo_id: int, occ_id: int):
     if occ.daily_report_id != rdo.id:
         abort(404)
     db.session.delete(occ)
+    db.session.commit()
+    return "", 204
+
+
+# ── Notes ────────────────────────────────────────────────────────────────────
+
+@bp.post("/api/projects/<int:project_id>/daily-reports/<int:rdo_id>/notes")
+@authorize_project_access
+def add_note(project_id: int, rdo_id: int):
+    rdo = _get_report(project_id, rdo_id)
+    try:
+        data = note_schema.load(request.get_json() or {})
+    except ValidationError as err:
+        return jsonify({"errors": err.messages}), 422
+    if not data.get("stage_id") and not data.get("task_id"):
+        return jsonify({"error": "stage_id or task_id is required"}), 400
+    note = DailyReportNote(
+        daily_report_id=rdo.id,
+        stage_id=data.get("stage_id"),
+        task_id=data.get("task_id"),
+        comment=data["comment"],
+    )
+    db.session.add(note)
+    db.session.commit()
+    return jsonify(note_schema.dump(note)), 201
+
+
+@bp.delete("/api/projects/<int:project_id>/daily-reports/<int:rdo_id>/notes/<int:note_id>")
+@authorize_project_access
+def delete_note(project_id: int, rdo_id: int, note_id: int):
+    rdo  = _get_report(project_id, rdo_id)
+    note = DailyReportNote.query.get_or_404(note_id)
+    if note.daily_report_id != rdo.id:
+        abort(404)
+    db.session.delete(note)
     db.session.commit()
     return "", 204
 
