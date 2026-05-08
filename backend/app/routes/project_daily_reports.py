@@ -19,6 +19,8 @@ from app.models.daily_report_occurrence import DailyReportOccurrence
 from app.models.document import Document
 from app.models.project import Project
 from app.models.photo import Photo
+from app.models.stage import Stage
+from app.models.task import Task
 from app.models.user import User
 from app.schemas.daily_report import (
     DailyReportSchema,
@@ -238,6 +240,15 @@ def _photo_to_data_uri(photo) -> str | None:
     return f"data:{mime};base64,{encoded}"
 
 
+def _stages_with_tasks(project_id: int) -> list[dict]:
+    stages = Stage.query.filter_by(project_id=project_id).order_by(Stage.order).all()
+    result = []
+    for s in stages:
+        tasks = Task.query.filter_by(stage_id=s.id).order_by(Task.id).all()
+        result.append({"stage": s, "tasks": tasks})
+    return result
+
+
 def _render_pdf(rdo: DailyReport) -> tuple[bytes, str]:
     project = Project.query.get(rdo.project_id)
     creator = User.query.get(rdo.created_by_user_id) if rdo.created_by_user_id else None
@@ -260,6 +271,7 @@ def _render_pdf(rdo: DailyReport) -> tuple[bytes, str]:
             "creator": creator,
             "occurrences": rdo.occurrences,
             "photos": photo_items,
+            "stages_with_tasks": _stages_with_tasks(rdo.project_id),
             "generated_at": datetime.now(timezone.utc),
         },
     )
@@ -341,6 +353,7 @@ def public_rdo(token: str):
         "pdf/rdo.html",
         rdo=rdo, project=project, creator=creator,
         occurrences=rdo.occurrences, photos=photo_items,
+        stages_with_tasks=_stages_with_tasks(rdo.project_id),
         generated_at=datetime.now(timezone.utc),
         public_view=True,
     )
