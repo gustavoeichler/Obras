@@ -46,6 +46,12 @@ class DailyReport(db.Model):
         lazy=True,
         cascade="all, delete-orphan",
     )
+    rdo_notes    = db.relationship(
+        "DailyReportNote",
+        backref="daily_report",
+        lazy=True,
+        cascade="all, delete-orphan",
+    )
 
     __table_args__ = (
         db.UniqueConstraint("project_id", "report_date", name="uq_daily_report_project_date"),
