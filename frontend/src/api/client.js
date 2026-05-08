@@ -93,6 +93,8 @@ export const project = (id) => ({
     delete: (rid)           => authed().delete(`/api/projects/${id}/daily-reports/${rid}`),
     addOccurrence:    (rid, data)      => authed().post(`/api/projects/${id}/daily-reports/${rid}/occurrences`, data).then(r => r.data),
     deleteOccurrence: (rid, occId)     => authed().delete(`/api/projects/${id}/daily-reports/${rid}/occurrences/${occId}`),
+    addNote:    (rid, data)      => authed().post(`/api/projects/${id}/daily-reports/${rid}/notes`, data).then(r => r.data),
+    deleteNote: (rid, noteId)    => authed().delete(`/api/projects/${id}/daily-reports/${rid}/notes/${noteId}`),
     pdfUrl:    (rid) => `/api/projects/${id}/daily-reports/${rid}/generate-pdf`,
     shareLink: (rid) => authed().get(`/api/projects/${id}/daily-reports/${rid}/share-link`).then(r => r.data),
     expenseBenchmark: (eid) =>
