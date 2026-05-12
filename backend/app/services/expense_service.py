@@ -28,17 +28,23 @@ def get_expense(project_id, expense_id, user):
 
 
 def _assert_member(project_id, responsible_user_id):
-    """Ensure responsible_user_id belongs to this project (owner or invited client)."""
+    """Ensure responsible_user_id belongs to this project (org member or invited client)."""
     if responsible_user_id is None:
         return
     from app.models.project import Project
     from app.models.project_client import ProjectClient
+    from app.models.user import User
     project = Project.query.get_or_404(project_id)
-    is_owner  = project.professional_id == responsible_user_id
+    responsible = User.query.get(responsible_user_id)
+    is_org_member = (
+        responsible is not None
+        and responsible.org_id is not None
+        and responsible.org_id == project.org_id
+    )
     is_client = ProjectClient.query.filter_by(
         project_id=project_id, client_id=responsible_user_id
     ).first() is not None
-    if not is_owner and not is_client:
+    if not is_org_member and not is_client:
         abort(400, description="responsible_user_id não pertence a este projeto")
 
 

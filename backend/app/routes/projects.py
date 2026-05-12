@@ -67,12 +67,15 @@ def list_projects():
     user    = User.query.get_or_404(user_id)
 
     if user.role == "professional":
-        projects = (
-            Project.query
-            .filter_by(org_id=user.org_id)
-            .order_by(Project.created_at.desc())
-            .all()
-        )
+        if user.org_id is None:
+            projects = []
+        else:
+            projects = (
+                Project.query
+                .filter_by(org_id=user.org_id)
+                .order_by(Project.created_at.desc())
+                .all()
+            )
     else:
         ids      = [l.project_id for l in ProjectClient.query.filter_by(client_id=user_id).all()]
         projects = (
@@ -90,16 +93,7 @@ def list_projects():
 def get_project(project_id: int):
     user_id = int(get_jwt_identity())
     user    = User.query.get_or_404(user_id)
-    project = Project.query.get_or_404(project_id)
-
-    if user.role == "professional":
-        if user.org_id is None or project.org_id != user.org_id:
-            return jsonify({"error": "Acesso negado"}), 403
-    else:
-        link = ProjectClient.query.filter_by(project_id=project_id, client_id=user_id).first()
-        if not link:
-            return jsonify({"error": "Acesso negado"}), 403
-
+    project = check_project_access(project_id, user)
     return jsonify(_to_dict(project))
 
 
