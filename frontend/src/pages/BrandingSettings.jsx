@@ -171,7 +171,7 @@ export default function BrandingSettings() {
             }}>
               {logoUrl
                 ? <img src={logoUrl} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%' }} />
-                : <span style={{ color: 'var(--text-muted)', fontSize: 12 }} style={{ fontSize: 11 }}>Sem logo</span>}
+                : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>Sem logo</span>}
             </div>
             <input
               ref={fileRef}
