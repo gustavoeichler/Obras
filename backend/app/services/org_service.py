@@ -61,5 +61,6 @@ def remove_member(org, member_id, requesting_user):
         if admin_count <= 1:
             abort(400, "Não é possível remover o único administrador da organização")
 
-    db.session.delete(member)
+    member.org_id = None
+    member.is_org_admin = False
     db.session.commit()

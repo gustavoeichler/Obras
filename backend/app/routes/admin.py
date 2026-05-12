@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify, request
+from datetime import datetime
+from flask import Blueprint, abort, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from app.extensions import db
@@ -12,7 +13,6 @@ def _require_superadmin():
     """Return current user; abort 403 if not superadmin."""
     user = User.query.get_or_404(int(get_jwt_identity()))
     if not user.is_superadmin:
-        from flask import abort
         abort(403, "Acesso restrito a superadministradores")
     return user
 
@@ -62,7 +62,16 @@ def update_org(org_id: int):
     _UPDATABLE = {"is_active", "plan", "plan_expires_at", "admin_notes"}
     for field in _UPDATABLE:
         if field in data:
-            setattr(org, field, data[field])
+            if field == "plan_expires_at":
+                val = data[field]
+                if val is not None:
+                    try:
+                        val = datetime.fromisoformat(val)
+                    except (ValueError, TypeError):
+                        return jsonify({"error": "plan_expires_at deve ser uma data ISO 8601"}), 422
+                setattr(org, field, val)
+            else:
+                setattr(org, field, data[field])
 
     db.session.commit()
 

@@ -23,6 +23,14 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db, directory=os.path.join(os.path.dirname(__file__), '..', 'migrations'))
     jwt.init_app(app)
+
+    from werkzeug.exceptions import HTTPException
+
+    @app.errorhandler(HTTPException)
+    def handle_http_error(e):
+        from flask import jsonify
+        return jsonify({"error": e.name, "message": e.description}), e.code
+
     # Production Netlify URL, deploy previews (deploy-preview-N--obra-saas.netlify.app),
     # branch deploys (branchname--obra-saas.netlify.app), and local dev.
     allowed_origins = [
@@ -58,6 +66,8 @@ def create_app(config_class=Config):
     from app.routes.project_health     import bp as project_health_bp
     from app.routes.price_intelligence import bp as price_intelligence_bp
     from app.routes.project_timeline   import bp as project_timeline_bp
+    from app.routes.org   import bp as org_bp
+    from app.routes.admin import bp as admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(me_branding_bp)
@@ -79,5 +89,7 @@ def create_app(config_class=Config):
     app.register_blueprint(project_health_bp)
     app.register_blueprint(price_intelligence_bp)
     app.register_blueprint(project_timeline_bp)
+    app.register_blueprint(org_bp)
+    app.register_blueprint(admin_bp)
 
     return app
