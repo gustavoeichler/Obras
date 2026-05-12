@@ -6,10 +6,13 @@ from app.models.user import User
 
 
 def get_org_or_404(user):
-    """Return the user's org or 404 if they have none."""
+    """Return the user's org or abort. Aborts 403 if org is inactive."""
     if not user.org_id:
         abort(404, "Usuário não pertence a nenhuma organização")
-    return Organization.query.get_or_404(user.org_id)
+    org = Organization.query.get_or_404(user.org_id)
+    if not org.is_active:
+        abort(403, "Organização inativa")
+    return org
 
 
 def update_org(org, data):

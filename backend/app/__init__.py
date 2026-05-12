@@ -1,6 +1,6 @@
 import os
 import re
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from supabase import create_client
 
@@ -28,7 +28,6 @@ def create_app(config_class=Config):
 
     @app.errorhandler(HTTPException)
     def handle_http_error(e):
-        from flask import jsonify
         return jsonify({"error": e.name, "message": e.description}), e.code
 
     # Production Netlify URL, deploy previews (deploy-preview-N--obra-saas.netlify.app),
