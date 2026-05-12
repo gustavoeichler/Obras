@@ -39,7 +39,7 @@ def check_project_access(project_id, user):
     project = Project.query.get_or_404(project_id)
 
     if user.role == "professional":
-        if project.org_id != user.org_id:
+        if user.org_id is None or project.org_id != user.org_id:
             abort(403, "Acesso negado")
 
     elif user.role == "client":
@@ -73,6 +73,8 @@ def secure_query(query, user):
     from app.models.project import Project
 
     if user.role == "professional":
+        if user.org_id is None:
+            abort(403, "Acesso negado")
         return query.join(Project, Project.id == _project_id_col(query)).filter(
             Project.org_id == user.org_id
         )

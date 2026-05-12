@@ -32,7 +32,7 @@ def invite_to_project(project_id: int):
     user    = User.query.get_or_404(user_id)
     project = Project.query.get_or_404(project_id)
 
-    if user.role != "professional" or project.professional_id != user_id:
+    if user.role != "professional" or user.org_id is None or project.org_id != user.org_id:
         return jsonify({"error": "Acesso negado"}), 403
 
     data  = request.get_json(silent=True) or {}

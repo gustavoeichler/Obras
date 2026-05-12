@@ -23,7 +23,7 @@ def health_summary():
     user = User.query.get_or_404(int(get_jwt_identity()))
 
     if user.role == "professional":
-        projects = Project.query.filter_by(professional_id=user.id).all()
+        projects = Project.query.filter_by(org_id=user.org_id).all() if user.org_id else []
     else:
         ids = [pc.project_id for pc in ProjectClient.query.filter_by(client_id=user.id).all()]
         projects = Project.query.filter(Project.id.in_(ids)).all() if ids else []
