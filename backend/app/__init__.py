@@ -39,6 +39,7 @@ def create_app(config_class=Config):
     )
 
     from app.routes.auth               import bp as auth_bp
+    from app.routes.me_branding        import bp as me_branding_bp
     from app.routes.projects           import bp as projects_bp
     from app.routes.invitations        import bp as invitations_bp
     from app.routes.photos             import bp as photos_bp
@@ -59,6 +60,7 @@ def create_app(config_class=Config):
     from app.routes.project_timeline   import bp as project_timeline_bp
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(me_branding_bp)
     app.register_blueprint(projects_bp)
     app.register_blueprint(invitations_bp)
     app.register_blueprint(photos_bp)

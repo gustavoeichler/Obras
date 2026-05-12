@@ -15,7 +15,9 @@ class Expense(db.Model):
         db.Integer, db.ForeignKey("project.id", ondelete="CASCADE"),
         nullable=False, index=True,
     )
-    quantity    = db.Column(db.Float, nullable=True)
-    unit        = db.Column(db.String(20), nullable=True)
+    quantity             = db.Column(db.Float, nullable=True)
+    unit                 = db.Column(db.String(20), nullable=True)
+    responsible_user_id  = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
-    project = db.relationship("Project", backref="expenses")
+    project          = db.relationship("Project", backref="expenses")
+    responsible_user = db.relationship("User", foreign_keys=[responsible_user_id])

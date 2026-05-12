@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import { ToastProvider } from './components/Toast'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { BrandingProvider } from './context/BrandingContext'
 import Expenses      from './pages/Expenses'
 import Budget        from './pages/Budget'
 import Stages        from './pages/Stages'
@@ -19,6 +20,7 @@ import BOM            from './pages/BOM'
 import DailyReports       from './pages/DailyReports'
 import DailyReportEditor  from './pages/DailyReportEditor'
 import PriceIntelligence  from './pages/PriceIntelligence'
+import BrandingSettings   from './pages/BrandingSettings'
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth()
@@ -56,6 +58,7 @@ function AppRoutes() {
       <Route path="/projects/:id/daily-reports/:rid" element={Wrap(<DailyReportEditor />)} />
 
       <Route path="/price-intelligence" element={Wrap(<PriceIntelligence />)} />
+      <Route path="/settings/branding"  element={Wrap(<BrandingSettings />)} />
 
       <Route path="*" element={<Navigate to="/projects" replace />} />
     </Routes>
@@ -65,9 +68,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <ToastProvider>
-        <AppRoutes />
-      </ToastProvider>
+      <BrandingProvider>
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
+      </BrandingProvider>
     </AuthProvider>
   )
 }

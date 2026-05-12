@@ -40,6 +40,11 @@ def alerts(project_id):
     return jsonify(budget_service.list_alerts(project_id, _user()))
 
 
+@bp.get("/breakdown")
+def breakdown(project_id):
+    return jsonify({"data": budget_service.get_breakdown(project_id, _user())})
+
+
 @bp.get("/<int:budget_id>")
 def get_budget(project_id, budget_id):
     return jsonify(budget_service.get_budget(project_id, budget_id, _user()))

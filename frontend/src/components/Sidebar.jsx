@@ -3,15 +3,18 @@ import {
   LayoutDashboard, Receipt, Layers, Truck, Tag, PiggyBank,
   BarChart2, FolderOpen, LogOut, Building2, GitBranch, FileText,
   Compass, ChevronRight, Calculator, ClipboardList, TrendingUp,
+  Sun, Moon, Palette,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { project, formatBRL } from '../api/client'
 import { useAuth } from '../context/AuthContext'
+import { useBranding } from '../context/BrandingContext'
 import { useMobileNav } from '../context/MobileNavContext'
 
 export default function Sidebar() {
   const [total, setTotal] = useState(null)
   const { user, logout } = useAuth()
+  const { branding, logoUrl, theme, setTheme } = useBranding()
   const nav = useNavigate()
   const { isOpen } = useMobileNav()
   const projectMatch = useMatch('/projects/:id/*')
@@ -35,10 +38,12 @@ export default function Sidebar() {
     <aside className={`sidebar${isOpen ? ' sidebar--open' : ''}`}>
       <div className="sidebar-brand">
         <div className="brand-row">
-          <Compass size={14} className="brand-compass" />
+          {logoUrl
+            ? <img src={logoUrl} alt={branding.name} className="brand-logo" />
+            : <Compass size={14} className="brand-compass" />}
           <span className="brand-tag">v1.0 · SaaS</span>
         </div>
-        <div className="brand-name">OBRAS</div>
+        <div className="brand-name">{branding.name}</div>
         <div className="brand-sub">gestão · execução · obra</div>
       </div>
 
@@ -89,6 +94,24 @@ export default function Sidebar() {
             <div className="user-email" title={user?.email}>{user?.email}</div>
             <div className="user-role">{isPro ? 'PROFISSIONAL' : 'CLIENTE'}</div>
           </div>
+          {isPro && (
+            <NavLink
+              to="/settings/branding"
+              className="user-logout"
+              title="Identidade visual"
+              aria-label="Identidade visual"
+            >
+              <Palette size={14} />
+            </NavLink>
+          )}
+          <button
+            className="user-logout"
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            title={theme === 'light' ? 'Mudar para escuro' : 'Mudar para claro'}
+            aria-label="Alternar tema"
+          >
+            {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+          </button>
           <button
             className="user-logout"
             onClick={handleLogout}

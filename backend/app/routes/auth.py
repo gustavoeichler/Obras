@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 
 from app.extensions import db
 from app.models.user import User
@@ -7,6 +7,29 @@ from app.models.user import User
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 _VALID_ROLES = {"professional", "client"}
+
+DEFAULT_BRAND_NAME    = "OBRAS"
+DEFAULT_BRAND_COLOR   = "#d4a017"
+DEFAULT_BRAND_THEME   = "dark"
+_VALID_THEMES         = {"light", "dark"}
+
+
+def serialize_user(user: User) -> dict:
+    """Public user payload — includes resolved branding for the frontend."""
+    has_logo = bool(user.logo_path)
+    branding = {
+        "name":          user.brand_name          or DEFAULT_BRAND_NAME,
+        "primary_color": user.brand_color_primary or DEFAULT_BRAND_COLOR,
+        "default_theme": user.brand_default_theme or DEFAULT_BRAND_THEME,
+        "logo_url":      f"/api/me/branding/logo?u={user.id}" if has_logo else None,
+    }
+    return {
+        "id":               user.id,
+        "email":            user.email,
+        "role":             user.role,
+        "theme_preference": user.theme_preference,
+        "branding":         branding,
+    }
 
 
 @bp.post("/register")
@@ -35,10 +58,7 @@ def register():
     db.session.commit()
 
     token = create_access_token(identity=str(user.id))
-    return jsonify({
-        "token": token,
-        "user":  {"id": user.id, "email": user.email, "role": user.role},
-    }), 201
+    return jsonify({"token": token, "user": serialize_user(user)}), 201
 
 
 @bp.post("/login")
@@ -56,7 +76,11 @@ def login():
         return jsonify({"error": "Credenciais inválidas"}), 401
 
     token = create_access_token(identity=str(user.id))
-    return jsonify({
-        "token": token,
-        "user":  {"id": user.id, "email": user.email, "role": user.role},
-    })
+    return jsonify({"token": token, "user": serialize_user(user)})
+
+
+@bp.get("/me")
+@jwt_required()
+def me():
+    user = User.query.get_or_404(int(get_jwt_identity()))
+    return jsonify({"data": serialize_user(user)})
