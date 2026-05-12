@@ -15,11 +15,15 @@ export default function OrgMembers() {
   const [adding,   setAdding]  = useState(false)
 
   useEffect(() => {
+    if (user?.role !== 'professional' || !user?.is_org_admin) {
+      setLoading(false)
+      return
+    }
     orgApi.listMembers()
       .then(r => setMembers(r.data))
       .catch(() => toast('Erro ao carregar membros.', 'error'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [user])
 
   if (user?.role !== 'professional' || !user?.is_org_admin) {
     return (
@@ -32,6 +36,10 @@ export default function OrgMembers() {
   const handleAdd = async (e) => {
     e.preventDefault()
     if (!email || !password) return
+    if (password.length < 6) {
+      toast('A senha deve ter ao menos 6 caracteres.', 'error')
+      return
+    }
     setAdding(true)
     try {
       const res = await orgApi.createMember({ email, password })
@@ -84,6 +92,7 @@ export default function OrgMembers() {
             placeholder="Senha (mín. 6 caracteres)"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            minLength={6}
             required
           />
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

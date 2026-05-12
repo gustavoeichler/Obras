@@ -15,11 +15,15 @@ export default function AdminOrgs() {
   const [saving,  setSaving]  = useState(false)
 
   useEffect(() => {
+    if (!user?.is_superadmin) {
+      setLoading(false)
+      return
+    }
     adminApi.listOrgs()
       .then(r => setOrgs(r.data))
       .catch(() => toast('Erro ao carregar organizações.', 'error'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [user])
 
   if (!user?.is_superadmin) {
     return <div className="card" style={{ maxWidth: 600 }}>Acesso restrito a superadministradores.</div>
