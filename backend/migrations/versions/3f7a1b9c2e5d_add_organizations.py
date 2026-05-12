@@ -40,6 +40,9 @@ def upgrade():
         batch_op.add_column(sa.Column('is_superadmin', sa.Boolean(), server_default='false', nullable=False))
         batch_op.create_foreign_key('fk_users_org_id', 'organizations', ['org_id'], ['id'], ondelete='SET NULL')
 
+    with op.batch_alter_table('users', schema=None) as batch_op:
+        batch_op.create_index('ix_users_org_id', ['org_id'])
+
     # 3. Add org_id column to project
     with op.batch_alter_table('project', schema=None) as batch_op:
         batch_op.add_column(sa.Column('org_id', sa.Integer(), nullable=True))
@@ -95,14 +98,16 @@ def upgrade():
 
 def downgrade():
     # 1. Re-add branding columns to users (nullable — no data back-fill)
+    # logo_path is owned by migration f9c1a2b34501 — not restored here
+    # WARNING: branding data in organizations is NOT restored to users on downgrade (lossy)
     with op.batch_alter_table('users', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('logo_path', sa.String(length=255), nullable=True))
         batch_op.add_column(sa.Column('brand_name', sa.String(length=80), nullable=True))
         batch_op.add_column(sa.Column('brand_color_primary', sa.String(length=7), nullable=True))
         batch_op.add_column(sa.Column('brand_default_theme', sa.String(length=10), nullable=True))
 
-    # 2. Drop org_id FK and column from users
+    # 2. Drop org_id index, FK, and columns from users
     with op.batch_alter_table('users', schema=None) as batch_op:
+        batch_op.drop_index('ix_users_org_id')
         batch_op.drop_constraint('fk_users_org_id', type_='foreignkey')
         batch_op.drop_column('is_superadmin')
         batch_op.drop_column('is_org_admin')
