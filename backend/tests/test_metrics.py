@@ -8,6 +8,7 @@ import pytest
 
 from app import create_app
 from app.extensions import db as _db
+from app.models.organization import Organization
 from app.models.user import User
 from app.models.project import Project
 from app.models.project_client import ProjectClient
@@ -44,25 +45,31 @@ def seeded(app):
     from flask_jwt_extended import create_access_token
 
     with app.app_context():
-        pro = User(email="pro@metrics.com", role="professional")
+        org = Organization(name="Metrics Org")
+        other_org = Organization(name="Other Org")
+        _db.session.add_all([org, other_org])
+        _db.session.flush()
+
+        pro = User(email="pro@metrics.com", role="professional", org_id=org.id, is_org_admin=True)
         pro.set_password("s")
         cli = User(email="cli@metrics.com", role="client")
         cli.set_password("s")
-        other_pro = User(email="other@metrics.com", role="professional")
+        other_pro = User(email="other@metrics.com", role="professional", org_id=other_org.id, is_org_admin=True)
         other_pro.set_password("s")
         _db.session.add_all([pro, cli, other_pro])
         _db.session.flush()
 
-        project = Project(name="Metrics Project", professional_id=pro.id, status="active")
-        other_project = Project(name="Other Project", professional_id=other_pro.id, status="active")
+        project = Project(name="Metrics Project", professional_id=pro.id, org_id=org.id, status="active")
+        other_project = Project(name="Other Project", professional_id=other_pro.id, org_id=other_org.id, status="active")
         _db.session.add_all([project, other_project])
         _db.session.flush()
 
         _db.session.add(ProjectClient(project_id=project.id, client_id=cli.id))
 
-        cat_a = Category(name="Materiais")
-        cat_b = Category(name="Mão de obra")
-        _db.session.add_all([cat_a, cat_b])
+        cat_a = Category(name="Materiais", project_id=project.id)
+        cat_b = Category(name="Mão de obra", project_id=project.id)
+        other_cat = Category(name="Materiais", project_id=other_project.id)
+        _db.session.add_all([cat_a, cat_b, other_cat])
         _db.session.flush()
 
         today = datetime.date.today()
@@ -71,7 +78,7 @@ def seeded(app):
             Expense(project_id=project.id, category_id=cat_a.id, amount=500.0,  date=today),
             Expense(project_id=project.id, category_id=cat_b.id, amount=2000.0, date=today),
             # expense belonging to other project — must NOT appear in project metrics
-            Expense(project_id=other_project.id, category_id=cat_a.id, amount=9999.0, date=today),
+            Expense(project_id=other_project.id, category_id=other_cat.id, amount=9999.0, date=today),
         ]
         _db.session.add_all(expenses)
         _db.session.commit()
@@ -113,7 +120,7 @@ def test_total_spent_excludes_other_projects(app, seeded):
 def test_total_spent_empty_project(app, seeded):
     with app.app_context():
         pro = User.query.get(seeded["pro_id"])
-        empty = Project(name="Empty", professional_id=pro.id, status="active")
+        empty = Project(name="Empty", professional_id=pro.id, org_id=pro.org_id, status="active")
         _db.session.add(empty)
         _db.session.commit()
         result = project_metrics(empty.id, pro)
@@ -159,7 +166,7 @@ def test_grouping_excludes_other_projects(app, seeded):
 def test_grouping_empty_project(app, seeded):
     with app.app_context():
         pro = User.query.get(seeded["pro_id"])
-        empty = Project(name="Empty2", professional_id=pro.id, status="active")
+        empty = Project(name="Empty2", professional_id=pro.id, org_id=pro.org_id, status="active")
         _db.session.add(empty)
         _db.session.commit()
         rows = grouped_by_category(empty.id, pro)
