@@ -172,6 +172,21 @@ export const tasksApi = {
   delete: (id)            => authed().delete(`/api/tasks/${id}`),
 }
 
+// ── Organization management ────────────────────────────────────
+export const orgApi = {
+  get:           ()            => authed().get('/api/org/').then(r => r.data),
+  update:        (data)        => authed().patch('/api/org/', data).then(r => r.data),
+  listMembers:   ()            => authed().get('/api/org/members').then(r => r.data),
+  createMember:  (data)        => authed().post('/api/org/members', data).then(r => r.data),
+  removeMember:  (memberId)    => authed().delete(`/api/org/members/${memberId}`).then(r => r.data),
+}
+
+// ── Super-admin ────────────────────────────────────────────────
+export const adminApi = {
+  listOrgs:   ()             => authed().get('/api/admin/orgs').then(r => r.data),
+  updateOrg:  (id, data)     => authed().patch(`/api/admin/orgs/${id}`, data).then(r => r.data),
+}
+
 // ── Helpers ───────────────────────────────────────────────────
 export const formatBRL = (value) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0)

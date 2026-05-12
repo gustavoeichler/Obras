@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Receipt, Layers, Truck, Tag, PiggyBank,
   BarChart2, FolderOpen, LogOut, Building2, GitBranch, FileText,
   Compass, ChevronRight, Calculator, ClipboardList, TrendingUp,
-  Sun, Moon, Palette,
+  Sun, Moon, Palette, Users, ShieldCheck,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { project, formatBRL } from '../api/client'
@@ -102,6 +102,26 @@ export default function Sidebar() {
               aria-label="Identidade visual"
             >
               <Palette size={14} />
+            </NavLink>
+          )}
+          {isPro && user?.is_org_admin && (
+            <NavLink
+              to="/org/members"
+              className="user-logout"
+              title="Membros da organização"
+              aria-label="Membros da organização"
+            >
+              <Users size={14} />
+            </NavLink>
+          )}
+          {user?.is_superadmin && (
+            <NavLink
+              to="/admin/orgs"
+              className="user-logout"
+              title="Painel administrativo"
+              aria-label="Painel administrativo"
+            >
+              <ShieldCheck size={14} />
             </NavLink>
           )}
           <button

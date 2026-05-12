@@ -21,6 +21,8 @@ import DailyReports       from './pages/DailyReports'
 import DailyReportEditor  from './pages/DailyReportEditor'
 import PriceIntelligence  from './pages/PriceIntelligence'
 import BrandingSettings   from './pages/BrandingSettings'
+import OrgMembers  from './pages/OrgMembers'
+import AdminOrgs   from './pages/AdminOrgs'
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth()
@@ -59,6 +61,8 @@ function AppRoutes() {
 
       <Route path="/price-intelligence" element={Wrap(<PriceIntelligence />)} />
       <Route path="/settings/branding"  element={Wrap(<BrandingSettings />)} />
+      <Route path="/org/members"  element={Wrap(<OrgMembers />)} />
+      <Route path="/admin/orgs"   element={Wrap(<AdminOrgs />)} />
 
       <Route path="*" element={<Navigate to="/projects" replace />} />
     </Routes>
