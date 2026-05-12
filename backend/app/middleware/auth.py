@@ -25,7 +25,7 @@ from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 def check_project_access(project_id, user):
     """Return the project if *user* is allowed to access it.
 
-    * Professional: must own the project (professional_id == user.id).
+    * Professional: must belong to the same organisation as the project (org_id == user.org_id).
     * Client: must have an explicit ProjectClient link.
 
     Raises HTTP 404 if the project does not exist, HTTP 403 if access is
@@ -39,7 +39,7 @@ def check_project_access(project_id, user):
     project = Project.query.get_or_404(project_id)
 
     if user.role == "professional":
-        if project.professional_id != user.id:
+        if user.org_id is None or project.org_id != user.org_id:
             abort(403, "Acesso negado")
 
     elif user.role == "client":
@@ -73,8 +73,10 @@ def secure_query(query, user):
     from app.models.project import Project
 
     if user.role == "professional":
+        if user.org_id is None:
+            abort(403, "Acesso negado")
         return query.join(Project, Project.id == _project_id_col(query)).filter(
-            Project.professional_id == user.id
+            Project.org_id == user.org_id
         )
     # Clients: per-project access is already enforced by check_project_access;
     # secure_query is not meaningful for client-level list queries.

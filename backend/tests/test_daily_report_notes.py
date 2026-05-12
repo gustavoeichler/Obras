@@ -4,6 +4,7 @@ from datetime import date
 
 from app import create_app
 from app.extensions import db as _db
+from app.models.organization import Organization
 from app.models.user import User
 from app.models.project import Project
 from app.models.stage import Stage
@@ -36,12 +37,16 @@ def seeded(app):
     from flask_jwt_extended import create_access_token
 
     with app.app_context():
-        pro = User(email="pro@rdonotes.com", role="professional")
+        org = Organization(name="RDO Org")
+        _db.session.add(org)
+        _db.session.flush()
+
+        pro = User(email="pro@rdonotes.com", role="professional", org_id=org.id, is_org_admin=True)
         pro.set_password("secret")
         _db.session.add(pro)
         _db.session.flush()
 
-        project = Project(name="Note Project", professional_id=pro.id, status="active")
+        project = Project(name="Note Project", professional_id=pro.id, org_id=org.id, status="active")
         _db.session.add(project)
         _db.session.flush()
 

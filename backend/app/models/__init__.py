@@ -1,3 +1,4 @@
+from app.models.organization import Organization
 from app.models.category import Category
 from app.models.supplier import Supplier
 from app.models.stage import Stage
@@ -20,6 +21,7 @@ from app.models.supplier_price_observation import SupplierPriceObservation
 from app.models.task_event import TaskEvent
 
 __all__ = [
+    "Organization",
     "Category", "Supplier", "Stage", "StageChecklistItem", "StageApproval",
     "Expense", "Budget", "Task", "Project", "Document", "User",
     "ProjectClient", "Invitation", "Photo",

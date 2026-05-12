@@ -53,6 +53,7 @@ def create_project():
         budget_total    = data.get("budget_total"),
         area_m2         = data.get("area_m2"),
         professional_id = user_id,
+        org_id          = user.org_id,
     )
     db.session.add(project)
     db.session.commit()
@@ -66,12 +67,15 @@ def list_projects():
     user    = User.query.get_or_404(user_id)
 
     if user.role == "professional":
-        projects = (
-            Project.query
-            .filter_by(professional_id=user_id)
-            .order_by(Project.created_at.desc())
-            .all()
-        )
+        if user.org_id is None:
+            projects = []
+        else:
+            projects = (
+                Project.query
+                .filter_by(org_id=user.org_id)
+                .order_by(Project.created_at.desc())
+                .all()
+            )
     else:
         ids      = [l.project_id for l in ProjectClient.query.filter_by(client_id=user_id).all()]
         projects = (
@@ -89,16 +93,7 @@ def list_projects():
 def get_project(project_id: int):
     user_id = int(get_jwt_identity())
     user    = User.query.get_or_404(user_id)
-    project = Project.query.get_or_404(project_id)
-
-    if user.role == "professional":
-        if project.professional_id != user_id:
-            return jsonify({"error": "Acesso negado"}), 403
-    else:
-        link = ProjectClient.query.filter_by(project_id=project_id, client_id=user_id).first()
-        if not link:
-            return jsonify({"error": "Acesso negado"}), 403
-
+    project = check_project_access(project_id, user)
     return jsonify(_to_dict(project))
 
 
@@ -179,8 +174,12 @@ def get_project_members(project_id: int):
     check_project_access(project_id, user)
 
     project = Project.query.get_or_404(project_id)
-    owner   = User.query.get(project.professional_id)
-    members = [{"id": owner.id, "email": owner.email, "role": "professional"}] if owner else []
+    org_members = (
+        User.query
+        .filter_by(org_id=project.org_id, role="professional")
+        .all()
+    ) if project.org_id else []
+    members = [{"id": u.id, "email": u.email, "role": "professional"} for u in org_members]
 
     for link in ProjectClient.query.filter_by(project_id=project_id).all():
         client = User.query.get(link.client_id)

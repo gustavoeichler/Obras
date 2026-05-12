@@ -30,6 +30,22 @@ export default function BrandingSettings() {
     return <div className="card" style={{ maxWidth: 600 }}>Disponível apenas para perfis profissionais.</div>
   }
 
+  if (!user?.is_org_admin) {
+    return (
+      <div>
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">IDENTIDADE VISUAL</h1>
+            <p className="page-subtitle">Personalize a aparência da plataforma para sua marca</p>
+          </div>
+        </div>
+        <div className="card" style={{ maxWidth: 600 }}>
+          <p>Apenas o administrador da organização pode editar a identidade visual.</p>
+        </div>
+      </div>
+    )
+  }
+
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -155,7 +171,7 @@ export default function BrandingSettings() {
             }}>
               {logoUrl
                 ? <img src={logoUrl} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%' }} />
-                : <span style={{ color: 'var(--text-muted)', fontSize: 12 }} style={{ fontSize: 11 }}>Sem logo</span>}
+                : <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>Sem logo</span>}
             </div>
             <input
               ref={fileRef}

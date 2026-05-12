@@ -8,6 +8,7 @@ import pytest
 
 from app import create_app
 from app.extensions import db as _db
+from app.models.organization import Organization
 from app.models.user import User
 from app.models.project import Project
 from app.models.project_client import ProjectClient
@@ -44,7 +45,11 @@ def seeded(app):
     from flask_jwt_extended import create_access_token
 
     with app.app_context():
-        pro = User(email="pro@test.com", role="professional")
+        org = Organization(name="Test Org")
+        _db.session.add(org)
+        _db.session.flush()
+
+        pro = User(email="pro@test.com", role="professional", org_id=org.id, is_org_admin=True)
         pro.set_password("secret")
 
         cli = User(email="cli@test.com", role="client")
@@ -53,7 +58,7 @@ def seeded(app):
         _db.session.add_all([pro, cli])
         _db.session.flush()
 
-        project = Project(name="Test Project", professional_id=pro.id, status="active")
+        project = Project(name="Test Project", professional_id=pro.id, org_id=org.id, status="active")
         _db.session.add(project)
         _db.session.flush()
 

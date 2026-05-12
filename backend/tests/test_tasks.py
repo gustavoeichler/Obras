@@ -8,6 +8,7 @@ import pytest
 
 from app import create_app
 from app.extensions import db as _db
+from app.models.organization import Organization
 from app.models.user import User
 from app.models.project import Project
 from app.models.project_client import ProjectClient
@@ -42,14 +43,18 @@ def seeded(app):
     from flask_jwt_extended import create_access_token
 
     with app.app_context():
-        pro = User(email="pro@tasks.com", role="professional")
+        org = Organization(name="Tasks Org")
+        _db.session.add(org)
+        _db.session.flush()
+
+        pro = User(email="pro@tasks.com", role="professional", org_id=org.id, is_org_admin=True)
         pro.set_password("secret")
         cli = User(email="cli@tasks.com", role="client")
         cli.set_password("secret")
         _db.session.add_all([pro, cli])
         _db.session.flush()
 
-        project = Project(name="Task Project", professional_id=pro.id, status="active")
+        project = Project(name="Task Project", professional_id=pro.id, org_id=org.id, status="active")
         _db.session.add(project)
         _db.session.flush()
 
@@ -74,11 +79,11 @@ def auth(token):
     return {"Authorization": f"Bearer {token}"}
 
 
-# ── POST /api/stages/<id>/tasks/v2 ────────────────────────────────────────────
+# ── POST /api/stages/<id>/tasks ────────────────────────────────────────────
 
 def test_create_task_ok(client, seeded):
     resp = client.post(
-        f"/api/stages/{seeded['stage_id']}/tasks/v2",
+        f"/api/stages/{seeded['stage_id']}/tasks",
         json={"name": "Escavar fundação"},
         headers=auth(seeded["pro_token"]),
     )
@@ -90,7 +95,7 @@ def test_create_task_ok(client, seeded):
 
 def test_create_task_client_forbidden(client, seeded):
     resp = client.post(
-        f"/api/stages/{seeded['stage_id']}/tasks/v2",
+        f"/api/stages/{seeded['stage_id']}/tasks",
         json={"name": "Should fail"},
         headers=auth(seeded["cli_token"]),
     )
@@ -99,17 +104,17 @@ def test_create_task_client_forbidden(client, seeded):
 
 def test_create_task_no_auth(client, seeded):
     resp = client.post(
-        f"/api/stages/{seeded['stage_id']}/tasks/v2",
+        f"/api/stages/{seeded['stage_id']}/tasks",
         json={"name": "No token"},
     )
     assert resp.status_code == 401
 
 
-# ── GET /api/stages/<id>/tasks/v2 ─────────────────────────────────────────────
+# ── GET /api/stages/<id>/tasks ─────────────────────────────────────────────
 
 def test_list_tasks_pro(client, seeded):
     resp = client.get(
-        f"/api/stages/{seeded['stage_id']}/tasks/v2",
+        f"/api/stages/{seeded['stage_id']}/tasks",
         headers=auth(seeded["pro_token"]),
     )
     assert resp.status_code == 200
@@ -118,7 +123,7 @@ def test_list_tasks_pro(client, seeded):
 
 def test_list_tasks_client_member(client, seeded):
     resp = client.get(
-        f"/api/stages/{seeded['stage_id']}/tasks/v2",
+        f"/api/stages/{seeded['stage_id']}/tasks",
         headers=auth(seeded["cli_token"]),
     )
     assert resp.status_code == 200
@@ -138,7 +143,7 @@ def test_mark_task_done(client, app, seeded):
         task_id = task.id
 
     resp = client.patch(
-        f"/api/tasks/{task_id}/done",
+        f"/api/tasks/{task_id}",
         json={"is_done": True},
         headers=auth(seeded["pro_token"]),
     )
@@ -159,7 +164,7 @@ def test_mark_task_undone(client, app, seeded):
         task_id = task.id
 
     resp = client.patch(
-        f"/api/tasks/{task_id}/done",
+        f"/api/tasks/{task_id}",
         json={"is_done": False},
         headers=auth(seeded["pro_token"]),
     )
@@ -179,7 +184,7 @@ def test_client_cannot_update_task(client, app, seeded):
         task_id = task.id
 
     resp = client.patch(
-        f"/api/tasks/{task_id}/done",
+        f"/api/tasks/{task_id}",
         json={"is_done": True},
         headers=auth(seeded["cli_token"]),
     )
@@ -198,8 +203,8 @@ def test_update_task_missing_field(client, app, seeded):
         task_id = task.id
 
     resp = client.patch(
-        f"/api/tasks/{task_id}/done",
-        json={},
+        f"/api/tasks/{task_id}",
+        json={"is_done": "not-a-bool"},
         headers=auth(seeded["pro_token"]),
     )
     assert resp.status_code == 422

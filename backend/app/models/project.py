@@ -12,6 +12,7 @@ class Project(db.Model):
 
     # Multi-tenant fields (nullable for backwards compatibility with existing rows)
     professional_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    org_id          = db.Column(db.Integer, db.ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True)
     description     = db.Column(db.Text, nullable=True)
     status          = db.Column(db.String(20), nullable=False, default="active")
     budget_total    = db.Column(db.Float, nullable=True)
