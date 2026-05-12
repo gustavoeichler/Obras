@@ -1,5 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Pencil, Trash2, AlertTriangle, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react'
+import { Plus, Pencil, Trash2, AlertTriangle, CheckCircle, AlertCircle, TrendingUp, BarChart2 } from 'lucide-react'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend, Cell,
+} from 'recharts'
 import Modal from '../components/Modal'
 import { useToast } from '../components/Toast'
 import { useParams } from 'react-router-dom'
@@ -105,6 +109,139 @@ function BudgetCard({ budget, onEdit, onDelete }) {
         <button className="btn-icon edit" style={{ flex: 1 }} onClick={() => onEdit(budget)}><Pencil size={13} /></button>
         <button className="btn-icon danger" style={{ flex: 1 }} onClick={() => onDelete(budget.id)}><Trash2 size={13} /></button>
       </div>
+    </div>
+  )
+}
+
+const STATUS_COLOR = {
+  ok:        'var(--green)',
+  alerta:    'var(--orange)',
+  estourado: 'var(--red)',
+}
+
+const BreakdownTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null
+  return (
+    <div style={{
+      background: 'var(--surface-2)', border: '1px solid var(--border-2)',
+      borderRadius: 'var(--radius)', padding: '10px 14px',
+      fontFamily: 'var(--font-mono)', fontSize: 12,
+    }}>
+      <div style={{ color: 'var(--text-muted)', marginBottom: 6 }}>{label}</div>
+      {payload.map(p => (
+        <div key={p.dataKey} style={{ color: p.color, fontWeight: 600 }}>
+          {p.name}: {formatBRL(p.value)}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function BudgetBreakdown({ projectApi }) {
+  const [rows,       setRows]       = useState([])
+  const [loading,    setLoading]    = useState(true)
+  const [drillRow,   setDrillRow]   = useState(null)   // breakdown row clicked
+  const [expenses,   setExpenses]   = useState([])
+  const [loadingExp, setLoadingExp] = useState(false)
+
+  useEffect(() => {
+    projectApi.budgets.breakdown()
+      .then(r => setRows(r.data || r))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleBarClick = async (data) => {
+    if (!data?.activePayload?.[0]) return
+    const row = data.activePayload[0].payload
+    setDrillRow(row)
+    setLoadingExp(true)
+    try {
+      const params = row.stage_id ? { stage_id: row.stage_id } : {}
+      const result = await projectApi.expenses.list(params)
+      setExpenses(result)
+    } finally {
+      setLoadingExp(false)
+    }
+  }
+
+  if (loading) return null
+  if (rows.length === 0) return null
+
+  const chartData = rows.map(r => ({
+    ...r,
+    name: r.stage_name.length > 18 ? r.stage_name.slice(0, 16) + '…' : r.stage_name,
+  }))
+
+  return (
+    <div className="card" style={{ marginBottom: 32 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+        <BarChart2 size={16} style={{ color: 'var(--accent)' }} />
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          Previsto vs Realizado por Etapa
+        </span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-dim)', marginLeft: 8 }}>
+          clique nas barras para ver detalhes
+        </span>
+      </div>
+
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart data={chartData} onClick={handleBarClick}
+          style={{ cursor: 'pointer' }}
+          margin={{ top: 4, right: 16, bottom: 4, left: 16 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontFamily: 'var(--font-mono)', fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={v => formatBRL(v).replace('R$ ', 'R$ ')} tick={{ fontFamily: 'var(--font-mono)', fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={90} />
+          <Tooltip content={<BreakdownTooltip />} />
+          <Legend wrapperStyle={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }} />
+          <Bar dataKey="planned_amount" name="Previsto" fill="var(--blue)" opacity={0.6} radius={[3, 3, 0, 0]} maxBarSize={40} />
+          <Bar dataKey="realized_amount" name="Realizado" radius={[3, 3, 0, 0]} maxBarSize={40}>
+            {chartData.map((entry, i) => (
+              <Cell key={i} fill={STATUS_COLOR[entry.status] || 'var(--green)'} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+
+      {drillRow && (
+        <Modal
+          title={`Gastos · ${drillRow.stage_name}`}
+          onClose={() => setDrillRow(null)}
+        >
+          <div style={{ marginBottom: 16, display: 'flex', gap: 24, fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+            <span>Previsto: <strong style={{ color: 'var(--blue)' }}>{formatBRL(drillRow.planned_amount)}</strong></span>
+            <span>Realizado: <strong style={{ color: STATUS_COLOR[drillRow.status] }}>{formatBRL(drillRow.realized_amount)}</strong></span>
+            <span>Saldo: <strong style={{ color: drillRow.remaining_amount >= 0 ? 'var(--green)' : 'var(--red)' }}>{formatBRL(drillRow.remaining_amount)}</strong></span>
+          </div>
+          {loadingExp ? (
+            <div className="loading"><div className="spinner" /> Carregando...</div>
+          ) : expenses.length === 0 ? (
+            <div className="empty-state" style={{ padding: '24px 0' }}>Nenhum gasto registrado nesta etapa.</div>
+          ) : (
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th style={{ textAlign: 'right' }}>Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {expenses.map(e => (
+                    <tr key={e.id}>
+                      <td className="td-mono" style={{ color: 'var(--text-muted)' }}>{e.date}</td>
+                      <td>{e.description || <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
+                      <td>{e.category?.name || <span style={{ color: 'var(--text-muted)' }}>—</span>}</td>
+                      <td className="td-amount">{formatBRL(e.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Modal>
+      )}
     </div>
   )
 }
@@ -244,6 +381,8 @@ export default function Budget() {
           </span>
         </div>
       )}
+
+      {!loading && budgets.length > 0 && <BudgetBreakdown projectApi={api} />}
 
       {loading ? (
         <div className="loading"><div className="spinner" /> Carregando...</div>

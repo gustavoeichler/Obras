@@ -1,3 +1,4 @@
+from flask import abort
 from sqlalchemy import func
 
 from app.extensions import db
@@ -26,8 +27,25 @@ def get_expense(project_id, expense_id, user):
     return expense
 
 
+def _assert_member(project_id, responsible_user_id):
+    """Ensure responsible_user_id belongs to this project (owner or invited client)."""
+    if responsible_user_id is None:
+        return
+    from app.models.project import Project
+    from app.models.project_client import ProjectClient
+    project = Project.query.get_or_404(project_id)
+    is_owner  = project.professional_id == responsible_user_id
+    is_client = ProjectClient.query.filter_by(
+        project_id=project_id, client_id=responsible_user_id
+    ).first() is not None
+    if not is_owner and not is_client:
+        abort(400, description="responsible_user_id não pertence a este projeto")
+
+
 def create_expense(project_id, data, user):
     check_project_access(project_id, user)
+    responsible_user_id = data.get("responsible_user_id")
+    _assert_member(project_id, responsible_user_id)
     expense = Expense(
         project_id=project_id,
         amount=data["amount"],
@@ -38,6 +56,7 @@ def create_expense(project_id, data, user):
         supplier_id=data.get("supplier_id"),
         quantity=data.get("quantity"),
         unit=data.get("unit"),
+        responsible_user_id=responsible_user_id,
     )
     db.session.add(expense)
     db.session.commit()
@@ -47,6 +66,9 @@ def create_expense(project_id, data, user):
 
 def update_expense(project_id, expense_id, data, user):
     expense = get_expense(project_id, expense_id, user)
+    if "responsible_user_id" in data:
+        _assert_member(project_id, data["responsible_user_id"])
+        expense.responsible_user_id = data["responsible_user_id"]
     expense.amount      = data.get("amount",      expense.amount)
     expense.date        = data.get("date",        expense.date)
     expense.description = data.get("description", expense.description)

@@ -16,6 +16,11 @@ class _NestedSupplier(Schema):
     name = fields.Str()
 
 
+class _NestedUser(Schema):
+    id    = fields.Int()
+    email = fields.Str()
+
+
 class ExpenseSchema(Schema):
     id = fields.Int(dump_only=True)
     amount = fields.Float(required=True, validate=validate.Range(min=0.01))
@@ -24,10 +29,12 @@ class ExpenseSchema(Schema):
     category_id = fields.Int(load_default=None)
     stage_id = fields.Int(load_default=None)
     supplier_id = fields.Int(load_default=None)
-    quantity = fields.Float(load_default=None, allow_none=True, validate=validate.Range(min=0))
-    unit = fields.Str(load_default=None, allow_none=True, validate=validate.Length(max=20))
+    quantity             = fields.Float(load_default=None, allow_none=True, validate=validate.Range(min=0))
+    unit                 = fields.Str(load_default=None, allow_none=True, validate=validate.Length(max=20))
+    responsible_user_id  = fields.Int(load_default=None, allow_none=True)
 
     # Read-only nested objects returned in GET responses
-    category = fields.Nested(_NestedCategory, dump_only=True)
-    stage = fields.Nested(_NestedStage, dump_only=True)
-    supplier = fields.Nested(_NestedSupplier, dump_only=True)
+    category         = fields.Nested(_NestedCategory, dump_only=True)
+    stage            = fields.Nested(_NestedStage,    dump_only=True)
+    supplier         = fields.Nested(_NestedSupplier, dump_only=True)
+    responsible_user = fields.Nested(_NestedUser,     dump_only=True)

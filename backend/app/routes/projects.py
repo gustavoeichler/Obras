@@ -171,6 +171,25 @@ def get_project_stats(project_id: int):
     })
 
 
+@bp.get("/<int:project_id>/members")
+@jwt_required()
+def get_project_members(project_id: int):
+    user_id = int(get_jwt_identity())
+    user    = User.query.get_or_404(user_id)
+    check_project_access(project_id, user)
+
+    project = Project.query.get_or_404(project_id)
+    owner   = User.query.get(project.professional_id)
+    members = [{"id": owner.id, "email": owner.email, "role": "professional"}] if owner else []
+
+    for link in ProjectClient.query.filter_by(project_id=project_id).all():
+        client = User.query.get(link.client_id)
+        if client:
+            members.append({"id": client.id, "email": client.email, "role": "client"})
+
+    return jsonify({"data": members})
+
+
 @bp.get("/<int:project_id>/expenses")
 @jwt_required()
 def get_project_expenses(project_id: int):

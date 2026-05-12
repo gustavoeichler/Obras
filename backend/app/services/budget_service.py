@@ -104,3 +104,49 @@ def delete_budget(project_id, budget_id, user):
 
 def list_alerts(project_id, user):
     return [b for b in list_budgets(project_id, user) if b["status"] in ("alerta", "estourado")]
+
+
+def get_breakdown(project_id, user):
+    """Aggregate budgets by stage for the breakdown chart.
+
+    Returns one row per stage (plus one "global" bucket for budgets with no
+    stage) with summed planned/realized amounts and an overall status.
+    """
+    check_project_access(project_id, user)
+    budgets = Budget.query.filter_by(project_id=project_id).all()
+
+    # Group budget rows by stage_id (None → global bucket)
+    from collections import defaultdict
+    groups: dict = defaultdict(list)
+    for b in budgets:
+        groups[b.stage_id].append(b)
+
+    result = []
+    for stage_id, group in groups.items():
+        stage_obj = group[0].stage  # same stage for all in group (or None)
+        planned   = sum(b.planned_amount for b in group)
+        realized  = sum(_compute_realized(b) for b in group)
+        remaining = planned - realized
+        percent   = round((realized / planned) * 100, 1) if planned > 0 else 0.0
+
+        if percent > 100:
+            status = "estourado"
+        elif percent >= 80:
+            status = "alerta"
+        else:
+            status = "ok"
+
+        result.append({
+            "stage_id":        stage_id,
+            "stage_name":      stage_obj.name if stage_obj else "Global / Sem etapa",
+            "planned_amount":  planned,
+            "realized_amount": realized,
+            "remaining_amount": remaining,
+            "percent_used":    percent,
+            "status":          status,
+            "budget_count":    len(group),
+        })
+
+    # Sort: named stages first (by name), then global bucket last
+    result.sort(key=lambda r: (r["stage_id"] is None, r["stage_name"]))
+    return result

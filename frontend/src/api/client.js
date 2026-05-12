@@ -36,7 +36,8 @@ export const project = (id) => ({
 
   budgets: {
     ...crud(`/api/projects/${id}/budgets`),
-    alerts: () => authed().get(`/api/projects/${id}/budgets/alerts`).then(r => r.data),
+    alerts:    () => authed().get(`/api/projects/${id}/budgets/alerts`).then(r => r.data),
+    breakdown: () => authed().get(`/api/projects/${id}/budgets/breakdown`).then(r => r.data),
   },
 
   categories: crud(`/api/projects/${id}/categories`),
@@ -79,6 +80,8 @@ export const project = (id) => ({
     forecast:  () => authed().get(`/api/projects/${id}/analytics/forecast`).then(r => r.data),
   },
 
+  members:   () => authed().get(`/api/projects/${id}/members`).then(r => r.data),
+
   dashboard: () => authed().get(`/api/projects/${id}/dashboard`).then(r => r.data),
 
   health: () => authed().get(`/api/projects/${id}/health`).then(r => r.data),
@@ -116,6 +119,15 @@ export const priceIntelligenceApi = {
 export const authApi = {
   login:    (data) => api.post('/auth/login',    data).then(r => r.data),
   register: (data) => api.post('/auth/register', data).then(r => r.data),
+  me:       ()     => authed().get('/auth/me').then(r => r.data),
+}
+
+// ── Current-user branding / theme ─────────────────────────────
+export const meApi = {
+  updateBranding: (patch)    => authed().put('/api/me/branding', patch).then(r => r.data),
+  uploadLogo:     (formData) => authed(true).post('/api/me/branding/logo', formData).then(r => r.data),
+  deleteLogo:     ()         => authed().delete('/api/me/branding/logo').then(r => r.data),
+  setTheme:       (theme)    => authed().put('/api/me/theme', { theme_preference: theme }).then(r => r.data),
 }
 
 // ── Multi-tenant Projects (list / detail / invite / photos) ───

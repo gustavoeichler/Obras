@@ -6,7 +6,7 @@ import { useToast } from '../components/Toast'
 import { project, formatBRL, formatDate } from '../api/client'
 import BenchmarkChip from '../components/BenchmarkChip'
 
-const empty = { amount: '', date: '', description: '', category_id: '', stage_id: '', supplier_id: '', quantity: '', unit: '' }
+const empty = { amount: '', date: '', description: '', category_id: '', stage_id: '', supplier_id: '', quantity: '', unit: '', responsible_user_id: '' }
 const UNITS = ['un', 'kg', 'saco_50kg', 'm', 'm2', 'm3', 'h', 'dia', 'L']
 
 export default function Expenses() {
@@ -17,6 +17,7 @@ export default function Expenses() {
   const [categories, setCategories] = useState([])
   const [stages,     setStages]     = useState([])
   const [suppliers,  setSuppliers]  = useState([])
+  const [members,    setMembers]    = useState([])
   const [loading,    setLoading]    = useState(true)
   const [modal,      setModal]      = useState(null)   // null | 'create' | 'edit'
   const [editing,    setEditing]    = useState(null)
@@ -35,11 +36,12 @@ export default function Expenses() {
 
   useEffect(() => {
     setLoading(true)
-    Promise.all([load(), api.categories.list(), api.stages.list(), api.suppliers.list()])
-      .then(([, cats, sts, sups]) => {
+    Promise.all([load(), api.categories.list(), api.stages.list(), api.suppliers.list(), api.members()])
+      .then(([, cats, sts, sups, mems]) => {
         setCategories(cats)
         setStages(sts)
         setSuppliers(sups)
+        setMembers(mems.data || mems)
       })
       .finally(() => setLoading(false))
   }, [load])
@@ -47,14 +49,15 @@ export default function Expenses() {
   const openCreate = () => { setForm(empty); setEditing(null); setModal('create') }
   const openEdit   = (e)  => {
     setForm({
-      amount:      e.amount,
-      date:        e.date,
-      description: e.description || '',
-      category_id: e.category_id || '',
-      stage_id:    e.stage_id    || '',
-      supplier_id: e.supplier_id || '',
-      quantity:    e.quantity ?? '',
-      unit:        e.unit || '',
+      amount:              e.amount,
+      date:                e.date,
+      description:         e.description || '',
+      category_id:         e.category_id || '',
+      stage_id:            e.stage_id    || '',
+      supplier_id:         e.supplier_id || '',
+      quantity:            e.quantity ?? '',
+      unit:                e.unit || '',
+      responsible_user_id: e.responsible_user_id || '',
     })
     setEditing(e.id)
     setModal('edit')
@@ -68,8 +71,9 @@ export default function Expenses() {
       category_id: form.category_id ? parseInt(form.category_id) : null,
       stage_id:    form.stage_id    ? parseInt(form.stage_id)    : null,
       supplier_id: form.supplier_id ? parseInt(form.supplier_id) : null,
-      quantity:    form.quantity !== '' ? parseFloat(form.quantity) : null,
-      unit:        form.unit || null,
+      quantity:             form.quantity !== '' ? parseFloat(form.quantity) : null,
+      unit:                 form.unit || null,
+      responsible_user_id:  form.responsible_user_id ? parseInt(form.responsible_user_id) : null,
     }
     if (!payload.amount || !payload.date) { toast('Preencha valor e data.', 'error'); return }
     setSaving(true)
@@ -151,6 +155,7 @@ export default function Expenses() {
                   <th>Categoria</th>
                   <th>Etapa</th>
                   <th>Fornecedor</th>
+                  <th>Responsável</th>
                   <th style={{ textAlign: 'right' }}>Valor</th>
                   <th />
                 </tr>
@@ -173,6 +178,11 @@ export default function Expenses() {
                     <td>
                       {e.supplier
                         ? <span style={{ fontSize: 13 }}>{e.supplier.name}</span>
+                        : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                    </td>
+                    <td>
+                      {e.responsible_user
+                        ? <span style={{ fontSize: 13 }}>{e.responsible_user.email}</span>
                         : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
                     <td className="td-amount">
@@ -263,6 +273,13 @@ export default function Expenses() {
                 {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
               </select>
             </div>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Responsável pelo pagamento</label>
+            <select className="form-select" value={form.responsible_user_id} onChange={e => f('responsible_user_id', e.target.value)}>
+              <option value="">Sem responsável</option>
+              {members.map(m => <option key={m.id} value={m.id}>{m.email}</option>)}
+            </select>
           </div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
             Informe quantidade e unidade para comparar seu preço com a média de mercado.
