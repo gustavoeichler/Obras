@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 
 from app.extensions import db
+from app.models.organization import Organization
 from app.models.user import User
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
@@ -15,18 +16,21 @@ _VALID_THEMES         = {"light", "dark"}
 
 
 def serialize_user(user: User) -> dict:
-    """Public user payload — includes resolved branding for the frontend."""
-    has_logo = bool(user.logo_path)
+    """Public user payload — includes resolved branding from the user's org."""
+    org = user.org
+    has_logo = bool(org.logo_path if org else None)
     branding = {
-        "name":          user.brand_name          or DEFAULT_BRAND_NAME,
-        "primary_color": user.brand_color_primary or DEFAULT_BRAND_COLOR,
-        "default_theme": user.brand_default_theme or DEFAULT_BRAND_THEME,
+        "name":          (org.brand_name          if org else None) or DEFAULT_BRAND_NAME,
+        "primary_color": (org.brand_color_primary if org else None) or DEFAULT_BRAND_COLOR,
+        "default_theme": (org.brand_default_theme if org else None) or DEFAULT_BRAND_THEME,
         "logo_url":      f"/api/me/branding/logo?u={user.id}" if has_logo else None,
     }
     return {
         "id":               user.id,
         "email":            user.email,
         "role":             user.role,
+        "is_org_admin":     user.is_org_admin,
+        "is_superadmin":    user.is_superadmin,
         "theme_preference": user.theme_preference,
         "branding":         branding,
     }
@@ -52,8 +56,18 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "E-mail já cadastrado"}), 409
 
+    org = None
+    if role == "professional":
+        org_name = email.split("@")[0]
+        org = Organization(name=org_name)
+        db.session.add(org)
+        db.session.flush()  # get org.id without committing
+
     user = User(email=email, role=role)
     user.set_password(password)
+    if org:
+        user.org_id = org.id
+        user.is_org_admin = True
     db.session.add(user)
     db.session.commit()
 
@@ -74,6 +88,10 @@ def login():
     user = User.query.filter_by(email=email).first()
     if not user or not user.check_password(password):
         return jsonify({"error": "Credenciais inválidas"}), 401
+
+    if not user.is_superadmin and user.org_id is not None:
+        if user.org and not user.org.is_active:
+            return jsonify({"error": "Sua organização está inativa. Entre em contato com o suporte."}), 403
 
     token = create_access_token(identity=str(user.id))
     return jsonify({"token": token, "user": serialize_user(user)})

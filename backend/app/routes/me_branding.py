@@ -45,25 +45,30 @@ def _detect(header: bytes):
 @jwt_required()
 def update_branding():
     user = _current_user()
+    if not user.is_org_admin:
+        return jsonify({"error": "Apenas administradores da organização podem atualizar a marca"}), 403
+    org = user.org
+    if not org:
+        return jsonify({"error": "Usuário sem organização"}), 400
     data = request.get_json(silent=True) or {}
 
     if "name" in data:
         name = (data.get("name") or "").strip()
         if name and len(name) > _BRAND_NAME_MAX:
             return jsonify({"error": f"name deve ter no máximo {_BRAND_NAME_MAX} caracteres"}), 422
-        user.brand_name = name or None
+        org.brand_name = name or None
 
     if "primary_color" in data:
         color = (data.get("primary_color") or "").strip()
         if color and not _HEX_COLOR_RE.match(color):
             return jsonify({"error": "primary_color deve ser um hex no formato #RRGGBB"}), 422
-        user.brand_color_primary = color or None
+        org.brand_color_primary = color or None
 
     if "default_theme" in data:
         theme = data.get("default_theme")
         if theme not in (None, "") and theme not in _VALID_THEMES:
             return jsonify({"error": f"default_theme deve ser: {', '.join(_VALID_THEMES)}"}), 422
-        user.brand_default_theme = theme or None
+        org.brand_default_theme = theme or None
 
     db.session.commit()
     return jsonify({"data": serialize_user(user)})
@@ -73,6 +78,11 @@ def update_branding():
 @jwt_required()
 def upload_logo():
     user = _current_user()
+    if not user.is_org_admin:
+        return jsonify({"error": "Apenas administradores da organização podem atualizar o logo"}), 403
+    org = user.org
+    if not org:
+        return jsonify({"error": "Usuário sem organização"}), 400
 
     if "file" not in request.files:
         return jsonify({"error": "Envie o arquivo no campo 'file'"}), 400
@@ -86,14 +96,13 @@ def upload_logo():
     if not mime:
         return jsonify({"error": "Formato inválido. Use PNG, JPG ou WebP."}), 415
 
-    # Delete old logo from Supabase if present
-    if user.logo_path:
+    if org.logo_path:
         try:
-            _storage().remove([user.logo_path])
+            _storage().remove([org.logo_path])
         except Exception:
             pass  # best-effort
 
-    storage_path = f"branding/{user.id}/{uuid.uuid4().hex}.{ext}"
+    storage_path = f"branding/org/{org.id}/{uuid.uuid4().hex}.{ext}"
     try:
         _storage().upload(
             path=storage_path,
@@ -104,7 +113,7 @@ def upload_logo():
         current_app.logger.error("Supabase logo upload failed: %s", exc)
         return jsonify({"error": "Falha ao salvar o logo"}), 500
 
-    user.logo_path = storage_path
+    org.logo_path = storage_path
     db.session.commit()
     return jsonify({"data": serialize_user(user)})
 
@@ -113,13 +122,16 @@ def upload_logo():
 @jwt_required()
 def delete_logo():
     user = _current_user()
-    if user.logo_path:
+    if not user.is_org_admin:
+        return jsonify({"error": "Apenas administradores da organização podem remover o logo"}), 403
+    org = user.org
+    if org and org.logo_path:
         try:
-            _storage().remove([user.logo_path])
+            _storage().remove([org.logo_path])
         except Exception:
             pass  # best-effort
-    user.logo_path = None
-    db.session.commit()
+        org.logo_path = None
+        db.session.commit()
     return jsonify({"data": serialize_user(user)})
 
 
@@ -130,11 +142,12 @@ def get_logo():
     if not user_id:
         abort(400)
     user = User.query.get_or_404(user_id)
-    if not user.logo_path:
+    org = user.org
+    if not org or not org.logo_path:
         abort(404)
 
     try:
-        raw = _storage().download(user.logo_path)
+        raw = _storage().download(org.logo_path)
     except Exception as exc:
         current_app.logger.error("Supabase logo download failed: %s", exc)
         abort(404)
