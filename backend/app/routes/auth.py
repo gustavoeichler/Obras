@@ -58,7 +58,7 @@ def register():
 
     org = None
     if role == "professional":
-        org_name = email.split("@")[0]
+        org_name = email.split("@")[0] or "Minha Organização"
         org = Organization(name=org_name)
         db.session.add(org)
         db.session.flush()  # get org.id without committing
@@ -89,9 +89,8 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({"error": "Credenciais inválidas"}), 401
 
-    if not user.is_superadmin and user.org_id is not None:
-        if user.org and not user.org.is_active:
-            return jsonify({"error": "Sua organização está inativa. Entre em contato com o suporte."}), 403
+    if not user.is_superadmin and user.org and not user.org.is_active:
+        return jsonify({"error": "Sua organização está inativa. Entre em contato com o suporte."}), 403
 
     token = create_access_token(identity=str(user.id))
     return jsonify({"token": token, "user": serialize_user(user)})

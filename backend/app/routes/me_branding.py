@@ -125,7 +125,9 @@ def delete_logo():
     if not user.is_org_admin:
         return jsonify({"error": "Apenas administradores da organização podem remover o logo"}), 403
     org = user.org
-    if org and org.logo_path:
+    if not org:
+        return jsonify({"error": "Usuário sem organização"}), 400
+    if org.logo_path:
         try:
             _storage().remove([org.logo_path])
         except Exception:
